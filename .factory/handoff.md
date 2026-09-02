@@ -3,7 +3,7 @@
 - Repair base: `95fc79bd85828cb1446eca2a129e705d23b7d0ab`
 - Product: `https://voice-riff-loop.sociobot.in`
 - Deployment class: static PWA
-- Status: repaired and deployed from this handoff commit.
+- Repair implementation deployed: `c7ba17056fca34ececbf90ed82b5a6bb4b029b58`.
 
 ## What changed
 
@@ -28,9 +28,9 @@ npm test
 npm run test:browser
 ```
 
-Results: build succeeded (`dist/`); lint passed; Vitest passed (2 tests); Playwright passed (13 tests, including axe serious/critical scan and 390 px keyboard/target/reduced-motion coverage).
+Results: build succeeded (`dist/`); lint passed; Vitest passed (2 tests); Playwright passed (14 tests, including axe serious/critical scan and 390 px keyboard/target/reduced-motion coverage).
 
-All declared claim commands were run individually as `npm run test:browser -- --grep @claim:<id>`; the completed clean browser run also covers all 11 tags.
+The completed clean browser run covers all 12 declared claim tags. The added supporter-label claim also passed with its exact `npm run test:browser -- --grep @claim:supporter-labels` command.
 
 Additional production-emulator checks:
 
@@ -39,6 +39,7 @@ Additional production-emulator checks:
 - `/404.html` and `/offline.html` had no CSP console errors.
 - Hashed JS served `Cache-Control: public, max-age=31536000, immutable`.
 - A 390 px PerformanceObserver run produced an LCP entry at 140 ms and left `BODY` focused on first paint.
+- Live post-deploy verification passed at the production URL: the emitted JS SHA-256 was `a8f0b7a09f12af5a5842d171ca9822bca9692f9da2877b243d90114da74e434e` both locally and remotely; unknown routes returned HTTP 404; immutable asset caching and CSP-safe fallback pages were confirmed.
 
 ## Known limitation
 
