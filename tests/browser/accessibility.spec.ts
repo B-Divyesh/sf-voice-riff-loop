@@ -47,6 +47,46 @@ test('keeps the skip link first and motion disabled when requested', async ({ pa
   expect(await page.locator('.record').evaluate((element) => getComputedStyle(element).animationName)).not.toBe('pulse');
 });
 
+test('handles immediate keyboard input across repeated fresh demo starts without page errors', async ({ browser }) => {
+  for (let run = 0; run < 20; run++) {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const page = await context.newPage();
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (message) => { if (message.type() === 'error') errors.push(`console: ${message.text()}`); });
+
+    await page.goto('http://127.0.0.1:4173/demo');
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    const tempo = page.getByLabel('Tempo in beats per minute');
+    await tempo.focus();
+    await page.keyboard.press('Home');
+    await page.keyboard.press('End');
+    await page.waitForTimeout(25);
+    const play = page.getByRole('button', { name: 'Play loop' });
+    await play.focus();
+    await page.keyboard.press('Space');
+    await expect(page.getByRole('button', { name: 'Stop loop' }), `startup run ${run + 1}`).toBeVisible();
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(100);
+    expect(errors, `startup run ${run + 1}`).toEqual([]);
+    await context.close();
+  }
+});
+
+test('keeps the action explanation and three facts in the first mobile viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const firstScreenItems = page.locator('.hero-actions span, .facts span');
+  await expect(firstScreenItems).toHaveCount(4);
+  for (const item of await firstScreenItems.all()) {
+    const label = await item.textContent();
+    const box = await item.boundingBox();
+    expect(box, label || 'first-screen item').not.toBeNull();
+    expect(box!.y + box!.height, label || 'first-screen item').toBeLessThanOrEqual(844);
+  }
+});
+
 test('gives every visible link and control a 44 by 44 px target on mobile and desktop', async ({ page }) => {
   for (const viewport of [{ width: 390, height: 844 }, { width: 1440, height: 960 }]) {
     await page.setViewportSize(viewport);

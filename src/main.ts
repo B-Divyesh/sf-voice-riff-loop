@@ -28,6 +28,8 @@ let paid = false;
 let licenseMessage = '';
 let updateAvailable = false;
 let applyingUpdate = false;
+let renderGeneration = 0;
+let initialization: { demo: boolean; promise: Promise<AppState> } | undefined;
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 const isDemoPath = () => location.pathname === '/demo' || new URLSearchParams(location.search).get('demo') === '1';
@@ -153,6 +155,7 @@ function howItWorks() { return `<section class="how" aria-labelledby="how-title"
 function demoBanner() { return `<aside class="demo-banner" aria-label="Demo controls"><span><b>Demo</b> — sample data, separate from your project</span><button id="reset-demo">Reset demo</button><a href="/" data-link>Start for real</a></aside>`; }
 
 async function render(moveFocus = false) {
+  const generation = ++renderGeneration;
   const path = location.pathname;
   const route = isDemoPath() ? '/demo' : path;
   document.title = pageTitle(route);
@@ -163,7 +166,9 @@ async function render(moveFocus = false) {
   else if (path !== '/' && path !== '/demo') app.innerHTML = `${header()}<main id="main" tabindex="-1" class="text-page"><h1>This tape side is blank</h1><p>That page is not part of Voice Riff Loop.</p><a class="button primary" href="/" data-link>Open the loop maker</a></main>${footer()}`;
   else {
     const demo = isDemoPath();
-    if (!state || state.demo !== demo) await initialize(demo);
+    const nextState = !state || state.demo !== demo ? await initialize(demo) : state;
+    if (generation !== renderGeneration || demo !== isDemoPath()) return;
+    state = nextState;
     app.innerHTML = `${header()}<main id="main" tabindex="-1">${demo ? '<h1 class="sr-only">Make a rhythm loop from your voice</h1>' + demoBanner() : heroSection()}${maker(state)}${demo ? '' : howItWorks()}</main>${footer()}`;
     drawWave();
   }
@@ -174,17 +179,39 @@ async function render(moveFocus = false) {
   }
 }
 
-async function initialize(demo: boolean) {
+async function createInitialState(demo: boolean): Promise<AppState> {
   const saved = await loadProject(demo).catch(() => undefined);
-  state = { demo, project: saved?.project || defaultProject(), audio: saved?.audio, selectedPad: 0, playing: false, recording: false, message: '' , activeStep: -1};
+  const nextState: AppState = { demo, project: saved?.project || defaultProject(), audio: saved?.audio, selectedPad: 0, playing: false, recording: false, message: '', activeStep: -1 };
   if (saved?.audio) {
-    try { state.buffer = await decodeAudio(saved.audio, getContext()); } catch { state.message = 'Your saved recording could not be read. Record a new sound.'; }
+    try { nextState.buffer = await decodeAudio(saved.audio, getContext()); } catch { nextState.message = 'Your saved recording could not be read. Record a new sound.'; }
   }
-  if (demo && !saved) await loadSample(true);
+  if (demo && !saved) {
+    const audio = createSampleWav();
+    const buffer = await decodeAudio(audio, getContext());
+    nextState.audio = audio;
+    nextState.buffer = buffer;
+    nextState.project = defaultProject(buffer.duration);
+    await persistState(nextState);
+  }
+  return nextState;
+}
+
+function initialize(demo: boolean, force = false): Promise<AppState> {
+  if (!force && state?.demo === demo) return Promise.resolve(state);
+  if (!force && initialization?.demo === demo) return initialization.promise;
+  const promise = createInitialState(demo).finally(() => {
+    if (initialization?.promise === promise) initialization = undefined;
+  });
+  initialization = { demo, promise };
+  return promise;
+}
+
+async function persistState(current: AppState) {
+  if (current.audio) await saveProject(current.demo, { project: current.project, audio: current.audio, savedAt: new Date().toISOString() });
 }
 
 async function persist() {
-  if (state.audio) await saveProject(state.demo, { project: state.project, audio: state.audio, savedAt: new Date().toISOString() });
+  await persistState(state);
 }
 
 async function verifyLicense(token: string) {
@@ -213,10 +240,15 @@ function restoreCachedLicense(token: string | null) {
 }
 
 async function loadSample(silent = false) {
+  const currentState = state;
   const blob = createSampleWav();
-  state.audio = blob; state.buffer = await decodeAudio(blob, getContext()); state.project = defaultProject(state.buffer.duration); state.selectedPad = 0;
-  if (!silent) state.message = 'Four sample sounds are ready. Tap any pad, then play the loop.';
-  await persist(); await render();
+  const buffer = await decodeAudio(blob, getContext());
+  if (state !== currentState) return;
+  const nextState: AppState = { ...currentState, audio: blob, buffer, project: defaultProject(buffer.duration), selectedPad: 0 };
+  if (!silent) nextState.message = 'Four sample sounds are ready. Tap any pad, then play the loop.';
+  state = nextState;
+  await persistState(nextState);
+  if (state === nextState) await render();
 }
 
 function drawWave() {
@@ -363,7 +395,13 @@ function bind() {
   app.querySelector('#apply-update')?.addEventListener('click', () => { applyingUpdate = true; void navigator.serviceWorker.getRegistration().then((registration) => registration?.waiting?.postMessage({ type: 'SKIP_WAITING' })); });
   app.querySelector<HTMLInputElement>('#pad-name')?.addEventListener('change', async (event) => { const value = (event.target as HTMLInputElement).value.trim().toUpperCase(); if (value) { state.project.pads[state.selectedPad].name = value; await persist(); await render(); } });
   app.querySelector('#restore-license')?.addEventListener('click', () => { const token = app.querySelector<HTMLInputElement>('#license-input')?.value.trim(); if (!token) { licenseMessage = 'Paste your license token, then restore your purchase.'; void render(); return; } localStorage.setItem('sb_license:voice-riff-loop', token); paid = true; void verifyLicense(token); });
-  app.querySelector('#reset-demo')?.addEventListener('click', async () => { await resetProject(true); await initialize(true); await render(); });
+  app.querySelector('#reset-demo')?.addEventListener('click', async () => {
+    await resetProject(true);
+    const resetState = await initialize(true, true);
+    if (!isDemoPath()) return;
+    state = resetState;
+    await render();
+  });
 }
 
 window.addEventListener('popstate', () => { disposePlayback(); void render(true); });
