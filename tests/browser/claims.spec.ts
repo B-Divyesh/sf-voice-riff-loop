@@ -98,6 +98,14 @@ test('keeps the unavailable checkout out of the product @claim:checkout-unavaila
   await expect(page.locator('a[href*="/checkout"]')).toHaveCount(0);
 });
 
+test('enables custom pad labels after a valid supporter license @claim:supporter-labels', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => { window.fetch = async () => new Response(JSON.stringify({ valid: true }), { headers: { 'Content-Type': 'application/json' } }); });
+  await page.getByLabel('License token').fill('valid-token');
+  await page.getByRole('button', { name: 'Restore purchase' }).click();
+  await expect(page.getByLabel('Name for selected pad')).toBeEnabled();
+});
+
 test('keeps a saved project in this browser after reload @claim:project-storage', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Load sample sounds' }).click();
