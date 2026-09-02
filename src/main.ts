@@ -16,6 +16,7 @@ let recorder: MediaRecorder | undefined;
 let recordStream: MediaStream | undefined;
 let loopTimer: number | undefined;
 let loopStart = 0;
+const activeVoices = new Set<{ source: AudioBufferSourceNode; gain: GainNode }>();
 let paid = false;
 let licenseMessage = '';
 let updateAvailable = false;
@@ -33,7 +34,20 @@ function pageTitle(route: string) {
   return 'Voice Riff Loop — Make a voice rhythm loop';
 }
 
+function disposePlayback() {
+  if (loopTimer !== undefined) window.clearTimeout(loopTimer);
+  loopTimer = undefined;
+  for (const voice of activeVoices) {
+    try { voice.source.stop(); } catch { /* The source may already have ended. */ }
+    voice.source.disconnect();
+    voice.gain.disconnect();
+  }
+  activeVoices.clear();
+  if (state) { state.playing = false; state.activeStep = -1; }
+}
+
 function navigate(path: string) {
+  disposePlayback();
   history.pushState({}, '', path); void render(true);
 }
 
@@ -78,7 +92,10 @@ function demoBanner() { return `<aside class="demo-banner" aria-label="Demo cont
 
 async function render(moveFocus = false) {
   const path = location.pathname;
-  document.title = pageTitle(path);
+  const route = isDemoPath() ? '/demo' : path;
+  document.title = pageTitle(route);
+  const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+  if (canonical) canonical.href = new URL(route === '/' ? '/' : route, 'https://voice-riff-loop.sociobot.in').href;
   if (path === '/privacy') app.innerHTML = privacyPage();
   else if (path === '/terms') app.innerHTML = termsPage();
   else if (path !== '/' && path !== '/demo') app.innerHTML = `${header()}<main id="main" tabindex="-1" class="text-page"><h1>This tape side is blank</h1><p>That page is not part of Voice Riff Loop.</p><a class="button primary" href="/" data-link>Open the loop maker</a></main>${footer()}`;
@@ -159,10 +176,14 @@ function drawWave() {
 
 function playPad(id: number) {
   if (!state.buffer) return;
-  const audio = getContext(); void audio.resume(); const pad = state.project.pads[id]; const source = audio.createBufferSource(); const gain = audio.createGain(); source.buffer = state.buffer; gain.gain.value = .85; source.connect(gain).connect(audio.destination); source.start(0, pad.start, Math.max(.03, pad.end - pad.start));
+  const audio = getContext(); void audio.resume(); const pad = state.project.pads[id]; const source = audio.createBufferSource(); const gain = audio.createGain(); const voice = { source, gain };
+  source.buffer = state.buffer; gain.gain.value = .85; source.connect(gain).connect(audio.destination);
+  activeVoices.add(voice);
+  source.addEventListener('ended', () => { activeVoices.delete(voice); source.disconnect(); gain.disconnect(); }, { once: true });
+  source.start(0, pad.start, Math.max(.03, pad.end - pad.start));
 }
 
-function stopLoop() { if (loopTimer) window.clearTimeout(loopTimer); loopTimer = undefined; state.playing = false; state.activeStep = -1; }
+function stopLoop() { disposePlayback(); }
 function startLoop() {
   if (!state.buffer) return; stopLoop(); state.playing = true; loopStart = performance.now();
   const tick = () => {
@@ -214,10 +235,12 @@ function bind() {
   app.querySelector('#reset-demo')?.addEventListener('click', async () => { await resetProject(true); await initialize(true); await render(); });
 }
 
-window.addEventListener('popstate', () => void render(true));
+window.addEventListener('popstate', () => { disposePlayback(); void render(true); });
 window.addEventListener('beforeunload', stopLoop);
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').then((registration) => {
-  const showUpdate = () => { if (registration.waiting) { updateAvailable = true; void render(); } };
+  const showUpdate = () => {
+    if (navigator.serviceWorker.controller && registration.waiting) { updateAvailable = true; void render(); }
+  };
   showUpdate();
   registration.addEventListener('updatefound', () => registration.installing?.addEventListener('statechange', showUpdate));
   navigator.serviceWorker.addEventListener('controllerchange', () => { if (applyingUpdate) location.reload(); });

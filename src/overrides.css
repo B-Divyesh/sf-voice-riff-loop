@@ -12,5 +12,6 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--blu
 input[type=range]{min-height:44px}
 .rename input,.pricing input{min-height:44px}
 .demo-banner button,.demo-banner a{min-height:44px;display:inline-flex;align-items:center}
+.hero-art{width:100%}
 @media (max-width:760px){.site-header{flex-wrap:wrap;gap:8px}.update-button{margin-left:0}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
