@@ -9,6 +9,7 @@ Voice Riff Loop is for new electronic-music makers who want to catch an idea bef
 1. Open `/` and tap **Record your voice**. The browser asks for microphone access after that tap.
 2. Stop recording. Tap a pad, then move its start and end handles to make a cut.
 3. Tap **Play loop** and use **Export 16-second WAV** when it sounds right.
+4. Use **Export project** to save the recording, cuts, labels, and tempo in a portable project file. Use **Import project** on another browser to restore it.
 
 Try the isolated sample project at `/demo`. It opens four ready-cut synthetic sounds. Demo changes use the separate `demo:voice-riff-loop` IndexedDB database. **Reset demo** restores the sample project.
 
@@ -26,7 +27,7 @@ npm run test:browser
 
 ## Privacy and support
 
-Audio, cuts, and tempo stay in this browser. Restoring a past supporter license sends its token to Sociobot for validation; it never sends audio. Read [Privacy](/privacy) and [Terms](/terms).
+Audio, cuts, and tempo stay in this browser. A project file is downloaded only when you choose **Export project**. Restoring a past supporter license sends its token to Sociobot for validation; it never sends audio. Read [Privacy](/privacy) and [Terms](/terms).
 
 Recording, cutting, looping, and WAV export are free. New supporter purchases are currently unavailable. Past supporter licenses can be restored by pasting a token.
 

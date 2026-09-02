@@ -14,6 +14,9 @@
 | Recording, cutting, looping, and WAV export are free. | 8 | pass |
 | Restoring sends your license token to Sociobot for validation. | 9 | pass |
 | It never sends your audio. | 5 | pass |
+| Export project | 2 | pass |
+| Import project | 2 | pass |
+| Export a project file to move your recording, cuts, labels, and tempo to another browser. | 16 | pass |
 
 All visitor-facing promises above have a matching entry and tagged regression test in `claims.json`. No landing sentence exceeds 22 words or contains a banned word.
 
@@ -25,4 +28,5 @@ All visitor-facing promises above have a matching entry and tagged regression te
 | fixed rhythmic sequence | loop |
 | handle range | cut |
 | downloadable audio file | WAV |
+| portable recording and loop settings file | project file |
 | isolated example project | demo |

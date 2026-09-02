@@ -13,6 +13,15 @@ async function downloadBytes(page: import('@playwright/test').Page) {
   return bytes;
 }
 
+async function downloadProject(page: import('@playwright/test').Page) {
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export project' }).click();
+  const download = await downloadPromise;
+  const path = await download.path();
+  if (!path) throw new Error('The project download did not create a file.');
+  return path;
+}
+
 test('loads four sample sounds without a recording @claim:sample-loop', async ({ page }) => {
   await page.goto('/demo');
   await expect(page.getByText('Demo — sample data, separate from your project')).toBeVisible();
@@ -115,6 +124,30 @@ test('keeps a saved project in this browser after reload @claim:project-storage'
   await expect(page.getByRole('button', { name: /play loop/i })).toBeEnabled();
 });
 
+test('exports and imports a portable project with its recording, cuts, labels, and tempo @claim:project-transfer', async ({ browser }) => {
+  const sourceContext = await browser.newContext();
+  const source = await sourceContext.newPage();
+  await source.goto('http://127.0.0.1:4173/');
+  await source.getByRole('button', { name: 'Load sample sounds' }).click();
+  await source.getByLabel('Tempo in beats per minute').fill('120');
+  await source.locator('#trim-start').fill('0.12');
+  const project = await downloadProject(source);
+  const destinationContext = await browser.newContext();
+  const destination = await destinationContext.newPage();
+  await destination.goto('http://127.0.0.1:4173/');
+  await destination.setInputFiles('#import-project', project);
+  await sourceContext.close();
+  await expect(destination.getByText('Project imported. Your recording, cuts, labels, and tempo are ready.')).toBeVisible();
+  await expect(destination.getByLabel('Tempo in beats per minute')).toHaveValue('120');
+  await expect(destination.locator('#trim-start')).toHaveValue('0.12');
+  await expect(destination.getByLabel('Name for selected pad')).toHaveValue('THUMP');
+  await expect(destination.getByRole('button', { name: 'Play loop' })).toBeEnabled();
+  await destination.reload();
+  await expect(destination.locator('#trim-start')).toHaveValue('0.12');
+  await expect(destination.getByRole('button', { name: 'Play loop' })).toBeEnabled();
+  await destinationContext.close();
+});
+
 test('discloses and sends a license token only when restore is requested @claim:license-token', async ({ page }) => {
   await page.goto('/');
   await page.evaluate(() => {
@@ -130,6 +163,16 @@ test('discloses and sends a license token only when restore is requested @claim:
   expect(await page.evaluate(() => (window as unknown as { license?: { url: string; hasOptions: boolean } }).license?.hasOptions)).toBe(false);
   await page.goto('/privacy');
   await expect(page.getByText(/sends only the license token to Sociobot/i)).toBeVisible();
+});
+
+test('does not offer an unavailable purchase after a rejected license', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => { window.fetch = async () => new Response(JSON.stringify({ valid: false }), { headers: { 'Content-Type': 'application/json' } }); });
+  await page.getByLabel('License token').fill('rejected-token');
+  await page.getByRole('button', { name: 'Restore purchase' }).click();
+  await expect(page.getByText('That license is not active. New supporter purchases are unavailable.')).toBeVisible();
+  await expect(page.getByText(/buy a new supporter edition license/i)).toHaveCount(0);
+  await expect(page.locator('a[href*="/checkout"]')).toHaveCount(0);
 });
 
 test('loads the app before a slow license check finishes @claim:license-first-paint', async ({ page }) => {

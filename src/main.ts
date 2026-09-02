@@ -10,6 +10,13 @@ type AppState = {
   recording: boolean; recordingStarted?: number; message: string; activeStep: number;
 };
 
+type PortableProjectFile = {
+  format: 'voice-riff-loop-project';
+  version: 1;
+  project: LoopProject;
+  audio: { type: string; data: string };
+};
+
 let state: AppState;
 let context: AudioContext | undefined;
 let recorder: MediaRecorder | undefined;
@@ -26,6 +33,60 @@ const app = document.querySelector<HTMLDivElement>('#app')!;
 const isDemoPath = () => location.pathname === '/demo' || new URLSearchParams(location.search).get('demo') === '1';
 const getContext = () => context ||= new AudioContext();
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
+
+function projectIsValid(project: unknown): project is LoopProject {
+  if (!project || typeof project !== 'object') return false;
+  const value = project as Record<string, unknown>;
+  if (typeof value.tempo !== 'number' || !Number.isFinite(value.tempo) || value.tempo < 76 || value.tempo > 156) return false;
+  const duration = value.duration;
+  if (typeof duration !== 'number' || !Number.isFinite(duration) || duration <= .03) return false;
+  if (!Array.isArray(value.pads) || value.pads.length !== 4) return false;
+  return value.pads.every((pad, index) => {
+    if (!pad || typeof pad !== 'object') return false;
+    const item = pad as Record<string, unknown>;
+    return item.id === index && typeof item.name === 'string' && item.name.length > 0 && item.name.length <= 10
+      && typeof item.start === 'number' && Number.isFinite(item.start) && item.start >= 0
+      && typeof item.end === 'number' && Number.isFinite(item.end) && item.end <= duration
+      && item.end - item.start >= .03;
+  });
+}
+
+function isPortableProjectFile(value: unknown): value is PortableProjectFile {
+  if (!value || typeof value !== 'object') return false;
+  const file = value as Record<string, unknown>;
+  if (file.format !== 'voice-riff-loop-project' || file.version !== 1 || !projectIsValid(file.project)) return false;
+  if (!file.audio || typeof file.audio !== 'object') return false;
+  const audio = file.audio as Record<string, unknown>;
+  return typeof audio.type === 'string' && typeof audio.data === 'string' && audio.data.length > 0;
+}
+
+function base64ToBlob(data: string, type: string): Blob {
+  const binary = atob(data);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index);
+  return new Blob([bytes], { type: type || 'application/octet-stream' });
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error || new Error('The recording could not be exported.'));
+    reader.onload = () => {
+      if (typeof reader.result !== 'string') { reject(new Error('The recording could not be exported.')); return; }
+      resolve(reader.result.slice(reader.result.indexOf(',') + 1));
+    };
+    reader.readAsDataURL(blob);
+  });
+}
+
+function download(blob: Blob, name: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = name;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
 
 function pageTitle(route: string) {
   if (route === '/privacy') return 'Privacy — Voice Riff Loop';
@@ -60,7 +121,7 @@ function footer() {
 function notice(message: string) { return message ? `<p class="notice" role="status">${message}</p>` : ''; }
 
 function privacyPage() {
-  return `${header()}<main id="main" tabindex="-1" class="text-page"><h1>Your recordings stay in this browser</h1><p>Your audio, pad cuts, and tempo are stored in this browser's IndexedDB.</p><h2>License checks</h2><p>Restoring a supporter license sends only the license token to Sociobot for validation.</p><p>Voice recordings and loop data are never included in that request.</p><h2>Control your data</h2><p>Export a WAV whenever you want.</p></main>${footer()}`;
+  return `${header()}<main id="main" tabindex="-1" class="text-page"><h1>Your recordings stay in this browser</h1><p>Your audio, pad cuts, and tempo are stored in this browser's IndexedDB.</p><h2>License checks</h2><p>Restoring a supporter license sends only the license token to Sociobot for validation.</p><p>Voice recordings and loop data are never included in that request.</p><h2>Control your data</h2><p>Export a WAV whenever you want.</p><p>Export a project file to move your recording, cuts, labels, and tempo to another browser.</p></main>${footer()}`;
 }
 function termsPage() {
   return `${header()}<main id="main" tabindex="-1" class="text-page"><h1>Terms for using Voice Riff Loop</h1><p>Use this instrument to record sounds you have permission to use.</p><h2>Local tool</h2><p>This app runs in your browser. It does not promise identical microphone timing on every device.</p><h2>Past supporter licenses</h2><p>License validation is provided by Sociobot. Sociobot and Dodo are the merchant of record for past purchases.</p><p>Refunded licenses can be revoked. Contact the merchant shown on your purchase receipt for refunds.</p><h2>Service</h2><p>The app is provided as-is. Stop using it if it does not suit your recording setup.</p></main>${footer()}`;
@@ -83,6 +144,7 @@ function maker(state: AppState) {
       <div class="pads" role="group" aria-label="Voice sound pads">${pads}</div>
       <label class="rename">Pad name ${paid ? `<input id="pad-name" value="${selected.name}" maxlength="10" aria-label="Name for selected pad" />` : `<input value="${selected.name}" aria-label="Name for selected pad" disabled />`} <small>${paid ? 'Saved locally with this project.' : 'Custom pad labels need a supporter license.'}</small></label>
       <div class="transport"><button id="play-loop" class="button primary" ${hasAudio ? '' : 'disabled'}>${state.playing ? 'Stop loop' : 'Play loop'}</button><button id="export" class="button secondary" ${hasAudio ? '' : 'disabled'}>Export 16-second WAV</button><div class="step-strip" role="img" aria-label="16-step loop pattern">${strip}</div></div>
+      <div class="project-actions" role="group" aria-label="Project file actions"><button id="export-project" class="button secondary" ${hasAudio ? '' : 'disabled'}>Export project</button><label class="button secondary import-project">Import project<input id="import-project" class="project-file-input" type="file" accept="application/json,.voice-riff-loop.json,.json" /></label></div>
     </div><p class="maker-help">Tap a pad to hear it and select it. Move its two cut handles. The loop plays at the tempo above.</p></section>`;
 }
 
@@ -131,7 +193,7 @@ async function verifyLicense(token: string) {
     const verdict = await response.json() as { valid?: boolean };
     paid = verdict.valid === true;
     localStorage.setItem('sb_license_verdict:voice-riff-loop', JSON.stringify({ valid: paid, checkedAt: Date.now() }));
-    licenseMessage = paid ? 'License verified. Custom pad labels are active.' : 'That license is not active. You can buy a new supporter edition license.';
+    licenseMessage = paid ? 'License verified. Custom pad labels are active.' : 'That license is not active. New supporter purchases are unavailable.';
   } catch { licenseMessage = 'Your saved license will be checked when you are online.'; }
   await render();
 }
@@ -172,6 +234,17 @@ function drawWave() {
   ctx.stroke(); ctx.globalAlpha = 1;
   const pad = state.project.pads[state.selectedPad]; const left = pad.start / duration * width; const right = pad.end / duration * width;
   ctx.fillStyle = 'rgba(215,233,75,.27)'; ctx.fillRect(left, 0, right - left, height); ctx.strokeStyle = '#d7e94b'; ctx.strokeRect(left + 1, 1, right - left - 2, height - 2);
+}
+
+function syncTrimControls() {
+  const pad = state.project.pads[state.selectedPad];
+  const start = document.querySelector<HTMLInputElement>('#trim-start');
+  const end = document.querySelector<HTMLInputElement>('#trim-end');
+  if (start) start.value = pad.start.toFixed(2);
+  if (end) end.value = pad.end.toFixed(2);
+  const readout = document.querySelector('.cut-readout');
+  if (readout) readout.textContent = `PAD ${state.selectedPad + 1} · ${pad.start.toFixed(2)}–${pad.end.toFixed(2)} SEC`;
+  drawWave();
 }
 
 function playPad(id: number) {
@@ -217,18 +290,76 @@ async function toggleRecording() {
 
 function exportWav() {
   if (!state.buffer) return;
-  const blob = renderLoop(state.buffer, state.project); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'voice-riff-loop.wav'; link.click(); URL.revokeObjectURL(url); state.message = 'Your 16-second WAV is downloading.'; void render();
+  download(renderLoop(state.buffer, state.project), 'voice-riff-loop.wav');
+  state.message = 'Your 16-second WAV is downloading.';
+  void render();
+}
+
+async function exportProject() {
+  if (!state.audio) return;
+  try {
+    const file: PortableProjectFile = {
+      format: 'voice-riff-loop-project',
+      version: 1,
+      project: {
+        tempo: state.project.tempo,
+        duration: state.project.duration,
+        pads: state.project.pads.map((pad) => ({ ...pad }))
+      },
+      audio: { type: state.audio.type || 'application/octet-stream', data: await blobToBase64(state.audio) }
+    };
+    download(new Blob([JSON.stringify(file)], { type: 'application/json' }), 'voice-riff-loop-project.json');
+    state.message = 'Your project file is downloading. It includes the recording, cuts, labels, and tempo.';
+  } catch {
+    state.message = 'This project could not be exported. Try recording or loading a sample again.';
+  }
+  await render();
+}
+
+async function importProject(file: File) {
+  try {
+    const parsed = JSON.parse(await file.text()) as unknown;
+    if (!isPortableProjectFile(parsed)) throw new Error('invalid project');
+    const audio = base64ToBlob(parsed.audio.data, parsed.audio.type);
+    const buffer = await decodeAudio(audio, getContext());
+    if (!parsed.project.pads.every((pad) => pad.end <= buffer.duration && pad.start < buffer.duration)) throw new Error('cut outside recording');
+    state.audio = audio;
+    state.buffer = buffer;
+    state.project = {
+      tempo: parsed.project.tempo,
+      duration: buffer.duration,
+      pads: parsed.project.pads.map((pad) => ({ ...pad }))
+    };
+    state.selectedPad = 0;
+    await persist();
+    state.message = 'Project imported. Your recording, cuts, labels, and tempo are ready.';
+  } catch {
+    state.message = 'That project file could not be imported. Choose a Voice Riff Loop project file.';
+  }
+  await render();
 }
 
 function bind() {
   app.querySelectorAll<HTMLAnchorElement>('[data-link]').forEach((link) => link.addEventListener('click', (event) => { if (link.origin === location.origin && !event.metaKey) { event.preventDefault(); navigate(link.pathname + link.search + link.hash); } }));
   app.querySelector<HTMLInputElement>('#tempo')?.addEventListener('input', async (event) => { state.project.tempo = Number((event.target as HTMLInputElement).value); const output = document.querySelector('#tempo-value'); if (output) output.textContent = `${state.project.tempo} BPM`; await persist(); });
   app.querySelectorAll<HTMLButtonElement>('[data-pad]').forEach((button) => button.addEventListener('click', async () => { state.selectedPad = Number(button.dataset.pad); playPad(state.selectedPad); await render(); }));
-  for (const id of ['trim-start', 'trim-end']) app.querySelector<HTMLInputElement>(`#${id}`)?.addEventListener('input', async (event) => { const pad: Pad = state.project.pads[state.selectedPad]; const n = Number((event.target as HTMLInputElement).value); if (id === 'trim-start') pad.start = clamp(n, 0, pad.end - .03); else pad.end = clamp(n, pad.start + .03, state.project.duration); drawWave(); document.querySelector('.cut-readout')!.textContent = `PAD ${state.selectedPad + 1} · ${pad.start.toFixed(2)}–${pad.end.toFixed(2)} SEC`; await persist(); });
+  for (const id of ['trim-start', 'trim-end']) app.querySelector<HTMLInputElement>(`#${id}`)?.addEventListener('input', async (event) => {
+    const pad: Pad = state.project.pads[state.selectedPad];
+    const n = Number((event.target as HTMLInputElement).value);
+    if (id === 'trim-start') pad.start = clamp(n, 0, pad.end - .03);
+    else pad.end = clamp(n, pad.start + .03, state.project.duration);
+    syncTrimControls();
+    await persist();
+  });
   app.querySelector('#record')?.addEventListener('click', () => void toggleRecording());
   app.querySelector('#load-sample')?.addEventListener('click', () => void loadSample());
   app.querySelector('#play-loop')?.addEventListener('click', () => { state.playing ? stopLoop() : startLoop(); refreshTransport(); });
   app.querySelector('#export')?.addEventListener('click', exportWav);
+  app.querySelector('#export-project')?.addEventListener('click', () => void exportProject());
+  app.querySelector<HTMLInputElement>('#import-project')?.addEventListener('change', (event) => {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) void importProject(file);
+  });
   app.querySelector('#apply-update')?.addEventListener('click', () => { applyingUpdate = true; void navigator.serviceWorker.getRegistration().then((registration) => registration?.waiting?.postMessage({ type: 'SKIP_WAITING' })); });
   app.querySelector<HTMLInputElement>('#pad-name')?.addEventListener('change', async (event) => { const value = (event.target as HTMLInputElement).value.trim().toUpperCase(); if (value) { state.project.pads[state.selectedPad].name = value; await persist(); await render(); } });
   app.querySelector('#restore-license')?.addEventListener('click', () => { const token = app.querySelector<HTMLInputElement>('#license-input')?.value.trim(); if (!token) { licenseMessage = 'Paste your license token, then restore your purchase.'; void render(); return; } localStorage.setItem('sb_license:voice-riff-loop', token); paid = true; void verifyLicense(token); });
