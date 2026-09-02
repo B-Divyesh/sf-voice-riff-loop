@@ -22,7 +22,7 @@ Verified locally on 2026-09-02:
 - `npm test`: 2 passing unit tests.
 - `npm run build`: passes; `dist/index.html` is at the deploy root.
 - `npm run test:browser`: 5 passing tests for sample loading, WAV download, offline demo reload, same-origin-only requests, and axe accessibility.
-- Production bundle: JS 6.82 KB gzip, CSS 2.44 KB gzip, hero 269 KB WebP. This meets the static budgets.
+- Production bundle: JS 6.85 KB gzip, CSS 2.65 KB gzip, hero 269 KB WebP. This meets the static budgets.
 
 ## Known gaps
 
