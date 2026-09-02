@@ -1,0 +1,212 @@
+import './style.css';
+import './overrides.css';
+import { createSampleWav, decodeAudio, defaultProject, type LoopProject, type Pad, renderLoop, pattern } from './audio';
+import { loadProject, resetProject, saveProject } from './storage';
+import hero from './assets/hero-cassette.webp';
+
+type AppState = {
+  demo: boolean; project: LoopProject;
+  audio?: Blob; buffer?: AudioBuffer; selectedPad: number; playing: boolean;
+  recording: boolean; recordingStarted?: number; message: string; activeStep: number;
+};
+
+let state: AppState;
+let context: AudioContext | undefined;
+let recorder: MediaRecorder | undefined;
+let recordStream: MediaStream | undefined;
+let loopTimer: number | undefined;
+let loopStart = 0;
+let paid = false;
+let licenseMessage = '';
+
+const app = document.querySelector<HTMLDivElement>('#app')!;
+const isDemoPath = () => location.pathname === '/demo' || new URLSearchParams(location.search).get('demo') === '1';
+const getContext = () => context ||= new AudioContext();
+const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
+
+function pageTitle(route: string) {
+  if (route === '/privacy') return 'Privacy — Voice Riff Loop';
+  if (route === '/terms') return 'Terms — Voice Riff Loop';
+  if (route === '/demo') return 'Demo — Voice Riff Loop';
+  return 'Voice Riff Loop — Make a voice rhythm loop';
+}
+
+function navigate(path: string) {
+  history.pushState({}, '', path); void render();
+}
+
+function header() {
+  return `<header class="site-header"><a class="wordmark" href="/" data-link>VOICE<br>RIFF<br>LOOP</a><nav aria-label="Main navigation"><a href="/demo" data-link>Demo</a><a href="/#maker" data-link>Loop maker</a><a href="/privacy" data-link>Privacy</a></nav></header>`;
+}
+function footer() {
+  return `<footer><p>Voice Riff Loop makes short voice rhythm sketches.</p><div><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><span>Built by Param Factory · v1</span></div></footer>`;
+}
+function notice(message: string) { return message ? `<p class="notice" role="status">${message}</p>` : ''; }
+
+function privacyPage() {
+  return `${header()}<main id="main" tabindex="-1" class="text-page"><h1>Your recordings stay on this device</h1><p>Voice Riff Loop stores recordings and loop settings in this browser.</p><h2>What the app stores</h2><p>Your audio file, four pad cuts, and tempo stay in IndexedDB on your device.</p><h2>What leaves the device</h2><p>Nothing. The app has no account, upload, tracking, or third-party scripts.</p><h2>Control your data</h2><p>Export a WAV at any time. Clearing your browser storage removes saved projects.</p></main>${footer()}`;
+}
+function termsPage() {
+  return `${header()}<main id="main" tabindex="-1" class="text-page"><h1>Terms for using Voice Riff Loop</h1><p>Use this instrument to record sounds you have permission to use.</p><h2>Local tool</h2><p>This app runs in your browser. It does not promise identical microphone timing on every device.</p><h2>Your audio</h2><p>You keep your recordings. We do not receive or claim rights to them.</p><h2>Service</h2><p>The app is provided as-is. Stop using it if it does not suit your recording setup.</p></main>${footer()}`;
+}
+
+function heroSection() {
+  return `<section class="hero" aria-labelledby="hero-title"><div class="hero-copy"><p class="eyebrow">A local voice instrument</p><h1 id="hero-title">Make a rhythm loop from your voice</h1><p class="lede">For new electronic-music makers who want a first sketch before learning a DAW.</p><div class="hero-actions"><a class="button primary" href="/demo" data-link>Try it with sample data</a><span>It opens four ready-cut voice sounds.</span></div><div class="facts"><span>Local recordings only</span><span>Works offline after first visit</span><span>One-time instrument</span></div></div><figure class="hero-art"><img src="${hero}" width="1200" height="800" fetchpriority="high" decoding="async" alt="A black cassette on torn cream, orange, green, and yellow paper." /><figcaption>Original generated collage. No samples are included.</figcaption></figure></section>`;
+}
+
+function maker(state: AppState) {
+  const selected = state.project.pads[state.selectedPad];
+  const duration = state.project.duration || 4;
+  const hasAudio = Boolean(state.buffer);
+  const pads = state.project.pads.map((pad, index) => `<button class="pad ${index === state.selectedPad ? 'selected' : ''}" data-pad="${index}" aria-pressed="${index === state.selectedPad}"><b>${index + 1}</b><span>${pad.name}</span><small>${(pad.end - pad.start).toFixed(2)}s</small></button>`).join('');
+  const strip = pattern.map((pad, index) => `<span class="step ${state.playing && state.activeStep === index ? 'on' : ''}" aria-hidden="true">${pad + 1}</span>`).join('');
+  return `<section id="maker" class="maker" aria-labelledby="maker-title"><div class="maker-heading"><div><p class="eyebrow">${state.demo ? 'Sample loop' : 'Your local project'}</p><h2 id="maker-title">Record, cut, and loop four sounds</h2></div><label class="tempo">Tempo <output id="tempo-value">${state.project.tempo} BPM</output><input id="tempo" type="range" min="76" max="156" value="${state.project.tempo}" aria-label="Tempo in beats per minute" /></label></div>
+    ${notice(state.message)}
+    <div class="tape-machine"><div class="tape-label"><span>VOICE / 4 PAD LOOP</span><span>${hasAudio ? `${duration.toFixed(1)} SEC SOURCE` : 'NO RECORDING'}</span></div><div class="wave-wrap"><canvas id="wave" width="900" height="144" aria-label="Waveform showing the selected pad cut"></canvas><div class="cut-readout">PAD ${state.selectedPad + 1} · ${selected.start.toFixed(2)}–${selected.end.toFixed(2)} SEC</div></div><div class="trim-controls"><label>Start <input id="trim-start" type="range" min="0" max="${duration}" step="0.01" value="${selected.start}" ${hasAudio ? '' : 'disabled'} /></label><label>End <input id="trim-end" type="range" min="0" max="${duration}" step="0.01" value="${selected.end}" ${hasAudio ? '' : 'disabled'} /></label></div>
+      <div class="record-row"><button id="record" class="record" ${state.recording ? 'aria-pressed="true"' : ''}>${state.recording ? 'Stop recording' : 'Record your voice'}</button><button id="load-sample" class="button secondary">Load sample sounds</button><span>${state.recording ? 'Recording locally. Tap stop when done.' : 'Microphone permission is requested only after you tap record.'}</span></div>
+      <div class="pads" role="group" aria-label="Voice sound pads">${pads}</div>
+      <label class="rename">Pad name ${paid ? `<input id="pad-name" value="${selected.name}" maxlength="10" aria-label="Name for selected pad" />` : `<input value="${selected.name}" aria-label="Name for selected pad" disabled />`} <small>${paid ? 'Saved locally with this project.' : 'Custom pad labels are part of the $9 supporter edition.'}</small></label>
+      <div class="transport"><button id="play-loop" class="button primary" ${hasAudio ? '' : 'disabled'}>${state.playing ? 'Stop loop' : 'Play loop'}</button><button id="export" class="button secondary" ${hasAudio ? '' : 'disabled'}>Export 16-second WAV</button><div class="step-strip" role="img" aria-label="16-step loop pattern">${strip}</div></div>
+    </div><p class="maker-help">Tap a pad to hear it and select it. Move its two cut handles. The loop plays at the tempo above.</p></section>`;
+}
+
+function howItWorks() { return `<section class="how" aria-labelledby="how-title"><h2 id="how-title">How to make a first loop</h2><ol><li><b>Record a sound.</b><span>Hum, say “ah,” pop your lips, or make a hi-hat.</span></li><li><b>Cut four pads.</b><span>Choose each pad and move its start and end handles.</span></li><li><b>Play and export.</b><span>Hear the fixed rhythm, then save a 16-second WAV.</span></li></ol></section><section class="pricing" aria-labelledby="pricing-title"><h2 id="pricing-title">Supporter edition</h2><p>Custom pad labels cost $9 once. Recording, four cuts, looping, and WAV export stay free.</p>${paid ? '<p class="paid-state">Supporter edition is active on this device.</p>' : `<div class="pricing-actions"><a class="button primary" href="https://api.sociobot.in/api/v1/products/voice-riff-loop/checkout">Buy supporter edition for $9</a><label>Have a license? <input id="license-input" placeholder="Paste license token" aria-label="License token" /></label><button id="restore-license" class="button secondary">Restore purchase</button></div>`}${licenseMessage ? `<p class="notice" role="status">${licenseMessage}</p>` : ''}</section><section class="privacy-note" aria-labelledby="privacy-title"><h2 id="privacy-title">What this instrument does not do</h2><p>It does not upload your voice, use voice models, include sample packs, or publish your music.</p></section>`; }
+
+function demoBanner() { return `<aside class="demo-banner" aria-label="Demo controls"><span><b>Demo</b> — sample data, nothing is saved</span><button id="reset-demo">Reset demo</button><a href="/" data-link>Start for real</a></aside>`; }
+
+async function render() {
+  const path = location.pathname;
+  document.title = pageTitle(path);
+  if (path === '/privacy') app.innerHTML = privacyPage();
+  else if (path === '/terms') app.innerHTML = termsPage();
+  else if (path !== '/' && path !== '/demo') app.innerHTML = `${header()}<main id="main" tabindex="-1" class="text-page"><h1>This tape side is blank</h1><p>That page is not part of Voice Riff Loop.</p><a class="button primary" href="/" data-link>Open the loop maker</a></main>${footer()}`;
+  else {
+    const demo = isDemoPath();
+    if (!state || state.demo !== demo) await initialize(demo);
+    app.innerHTML = `${header()}<main id="main" tabindex="-1">${demo ? demoBanner() : heroSection()}${maker(state)}${demo ? '' : howItWorks()}</main>${footer()}`;
+    drawWave();
+  }
+  bind();
+  const main = document.querySelector<HTMLElement>('#main');
+  if (document.activeElement?.tagName === 'BODY') main?.focus();
+}
+
+async function initialize(demo: boolean) {
+  const saved = await loadProject(demo).catch(() => undefined);
+  state = { demo, project: saved?.project || defaultProject(), audio: saved?.audio, selectedPad: 0, playing: false, recording: false, message: '' , activeStep: -1};
+  if (saved?.audio) {
+    try { state.buffer = await decodeAudio(saved.audio, getContext()); } catch { state.message = 'Your saved recording could not be read. Record a new sound.'; }
+  }
+  if (demo && !saved) await loadSample(true);
+}
+
+async function persist() {
+  if (state.audio) await saveProject(state.demo, { project: state.project, audio: state.audio, savedAt: new Date().toISOString() });
+}
+
+async function verifyLicense(token: string) {
+  try {
+    const response = await fetch(`https://api.sociobot.in/api/v1/products/voice-riff-loop/verify?license=${encodeURIComponent(token)}`);
+    const verdict = await response.json() as { valid?: boolean };
+    paid = verdict.valid === true;
+    localStorage.setItem('sb_license_verdict:voice-riff-loop', JSON.stringify({ valid: paid, checkedAt: Date.now() }));
+    licenseMessage = paid ? 'License verified. Custom pad labels are active.' : 'That license is not active. You can buy a new supporter edition license.';
+  } catch { licenseMessage = 'Your saved license will be checked when you are online.'; }
+  await render();
+}
+
+async function restoreLicense() {
+  const url = new URL(location.href); const fromUrl = url.searchParams.get('license');
+  if (fromUrl) { localStorage.setItem('sb_license:voice-riff-loop', fromUrl); url.searchParams.delete('license'); history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`); }
+  const token = fromUrl || localStorage.getItem('sb_license:voice-riff-loop');
+  if (!token) return;
+  const cached = localStorage.getItem('sb_license_verdict:voice-riff-loop');
+  if (cached) { const verdict = JSON.parse(cached) as { valid: boolean; checkedAt: number }; paid = verdict.valid; if (Date.now() - verdict.checkedAt < 86400000) return; }
+  else paid = true;
+  await verifyLicense(token);
+}
+
+async function loadSample(silent = false) {
+  const blob = createSampleWav();
+  state.audio = blob; state.buffer = await decodeAudio(blob, getContext()); state.project = defaultProject(state.buffer.duration); state.selectedPad = 0;
+  if (!silent) state.message = 'Four sample sounds are ready. Tap any pad, then play the loop.';
+  await persist(); await render();
+}
+
+function drawWave() {
+  const canvas = document.querySelector<HTMLCanvasElement>('#wave');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d')!; const width = canvas.width; const height = canvas.height;
+  ctx.fillStyle = '#171715'; ctx.fillRect(0, 0, width, height);
+  ctx.strokeStyle = '#f3ecd8'; ctx.globalAlpha = .76; ctx.lineWidth = 2; ctx.beginPath();
+  const samples = state.buffer?.getChannelData(0); const duration = state.project.duration || 1;
+  for (let x = 0; x < width; x++) {
+    const start = Math.floor(x / width * (samples?.length || 0)); const size = Math.max(1, Math.floor((samples?.length || 1) / width)); let peak = 0;
+    for (let y = 0; y < size; y++) peak = Math.max(peak, Math.abs(samples?.[start + y] || (Math.sin(x / 13) * .1)));
+    ctx.moveTo(x, height / 2 - peak * height * .42); ctx.lineTo(x, height / 2 + peak * height * .42);
+  }
+  ctx.stroke(); ctx.globalAlpha = 1;
+  const pad = state.project.pads[state.selectedPad]; const left = pad.start / duration * width; const right = pad.end / duration * width;
+  ctx.fillStyle = 'rgba(215,233,75,.27)'; ctx.fillRect(left, 0, right - left, height); ctx.strokeStyle = '#d7e94b'; ctx.strokeRect(left + 1, 1, right - left - 2, height - 2);
+}
+
+function playPad(id: number) {
+  if (!state.buffer) return;
+  const audio = getContext(); void audio.resume(); const pad = state.project.pads[id]; const source = audio.createBufferSource(); const gain = audio.createGain(); source.buffer = state.buffer; gain.gain.value = .85; source.connect(gain).connect(audio.destination); source.start(0, pad.start, Math.max(.03, pad.end - pad.start));
+}
+
+function stopLoop() { if (loopTimer) window.clearTimeout(loopTimer); loopTimer = undefined; state.playing = false; state.activeStep = -1; }
+function startLoop() {
+  if (!state.buffer) return; stopLoop(); state.playing = true; loopStart = performance.now();
+  const tick = () => {
+    const stepMs = (60 / state.project.tempo / 4) * 1000; const step = Math.floor((performance.now() - loopStart) / stepMs) % pattern.length;
+    if (step !== state.activeStep) { state.activeStep = step; playPad(pattern[step]); refreshTransport(); }
+    loopTimer = window.setTimeout(tick, 18);
+  }; tick();
+}
+function refreshTransport() {
+  document.querySelector<HTMLButtonElement>('#play-loop')!.textContent = state.playing ? 'Stop loop' : 'Play loop';
+  document.querySelectorAll<HTMLElement>('.step').forEach((step, index) => step.classList.toggle('on', state.playing && index === state.activeStep));
+}
+
+async function toggleRecording() {
+  if (state.recording && recorder) { recorder.stop(); return; }
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) { state.message = 'This browser cannot record audio. Use a current mobile or desktop browser.'; await render(); return; }
+  try {
+    recordStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const chunks: BlobPart[] = []; recorder = new MediaRecorder(recordStream);
+    recorder.ondataavailable = (event) => chunks.push(event.data);
+    recorder.onstop = async () => {
+      recordStream?.getTracks().forEach((track) => track.stop()); recordStream = undefined; state.recording = false;
+      const audio = new Blob(chunks, { type: recorder?.mimeType || 'audio/webm' });
+      try { state.buffer = await decodeAudio(audio, getContext()); state.audio = audio; state.project = defaultProject(state.buffer.duration); state.selectedPad = 0; state.message = 'Recording is ready. Cut each pad, then play the loop.'; await persist(); }
+      catch { state.message = 'That recording could not be read. Try a shorter recording in this browser.'; }
+      await render();
+    };
+    recorder.start(); state.recording = true; state.message = 'Recording locally. Tap stop when you have a sound.'; await render();
+  } catch (error) { state.message = 'Microphone access was not granted. Allow it in your browser, then try recording again.'; await render(); }
+}
+
+function exportWav() {
+  if (!state.buffer) return;
+  const blob = renderLoop(state.buffer, state.project); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'voice-riff-loop.wav'; link.click(); URL.revokeObjectURL(url); state.message = 'Your 16-second WAV is downloading.'; void render();
+}
+
+function bind() {
+  app.querySelectorAll<HTMLAnchorElement>('[data-link]').forEach((link) => link.addEventListener('click', (event) => { if (link.origin === location.origin && !event.metaKey) { event.preventDefault(); navigate(link.pathname + link.search + link.hash); } }));
+  app.querySelector<HTMLInputElement>('#tempo')?.addEventListener('input', async (event) => { state.project.tempo = Number((event.target as HTMLInputElement).value); const output = document.querySelector('#tempo-value'); if (output) output.textContent = `${state.project.tempo} BPM`; await persist(); });
+  app.querySelectorAll<HTMLButtonElement>('[data-pad]').forEach((button) => button.addEventListener('click', async () => { state.selectedPad = Number(button.dataset.pad); playPad(state.selectedPad); await render(); }));
+  for (const id of ['trim-start', 'trim-end']) app.querySelector<HTMLInputElement>(`#${id}`)?.addEventListener('input', async (event) => { const pad: Pad = state.project.pads[state.selectedPad]; const n = Number((event.target as HTMLInputElement).value); if (id === 'trim-start') pad.start = clamp(n, 0, pad.end - .03); else pad.end = clamp(n, pad.start + .03, state.project.duration); drawWave(); document.querySelector('.cut-readout')!.textContent = `PAD ${state.selectedPad + 1} · ${pad.start.toFixed(2)}–${pad.end.toFixed(2)} SEC`; await persist(); });
+  app.querySelector('#record')?.addEventListener('click', () => void toggleRecording());
+  app.querySelector('#load-sample')?.addEventListener('click', () => void loadSample());
+  app.querySelector('#play-loop')?.addEventListener('click', () => { state.playing ? stopLoop() : startLoop(); refreshTransport(); });
+  app.querySelector('#export')?.addEventListener('click', exportWav);
+  app.querySelector<HTMLInputElement>('#pad-name')?.addEventListener('change', async (event) => { const value = (event.target as HTMLInputElement).value.trim().toUpperCase(); if (value) { state.project.pads[state.selectedPad].name = value; await persist(); await render(); } });
+  app.querySelector('#restore-license')?.addEventListener('click', () => { const token = app.querySelector<HTMLInputElement>('#license-input')?.value.trim(); if (!token) { licenseMessage = 'Paste your license token, then restore your purchase.'; void render(); return; } localStorage.setItem('sb_license:voice-riff-loop', token); paid = true; void verifyLicense(token); });
+  app.querySelector('#reset-demo')?.addEventListener('click', async () => { await resetProject(true); await initialize(true); await render(); });
+}
+
+window.addEventListener('popstate', () => void render());
+window.addEventListener('beforeunload', stopLoop);
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => undefined);
+void restoreLicense().then(render);

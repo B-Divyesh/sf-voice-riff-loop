@@ -1,0 +1,30 @@
+[
+  {
+    "id": "sample-loop",
+    "claim": "The demo opens four ready-cut sample sounds.",
+    "where": "landing action and demo loop maker",
+    "test": "npm run test:browser -- --grep @claim:sample-loop",
+    "sandbox": "fresh browser context at /demo"
+  },
+  {
+    "id": "wav-export",
+    "claim": "Exports a 16-second WAV.",
+    "where": "loop maker export button",
+    "test": "npm run test:browser -- --grep @claim:wav-export",
+    "sandbox": "demo data; trigger the exported download"
+  },
+  {
+    "id": "offline-reload",
+    "claim": "Works offline after the first visit.",
+    "where": "landing facts and README",
+    "test": "npm run test:browser -- --grep @claim:offline-reload",
+    "sandbox": "fresh browser context at /demo, then offline reload"
+  },
+  {
+    "id": "local-only",
+    "claim": "Nothing leaves your device.",
+    "where": "landing facts and privacy page",
+    "test": "npm run test:browser -- --grep @claim:local-only",
+    "sandbox": "fresh browser context at /demo; inspect all outgoing requests"
+  }
+]
