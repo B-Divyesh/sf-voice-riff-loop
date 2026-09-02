@@ -8,3 +8,9 @@ const version = createHash('sha256').update(assets.join('|')).digest('hex').slic
 await writeFile('dist/sw.js', source
   .replace("'__ASSETS__'", assets.map((asset) => `'${asset}'`).join(','))
   .replace('__VERSION__', version));
+
+const hero = assets.find((asset) => /\/hero-cassette-.*\.webp$/.test(asset));
+if (hero) {
+  const html = await readFile('dist/index.html', 'utf8');
+  await writeFile('dist/index.html', html.replace('</head>', `    <link rel="preload" as="image" href="${hero}" fetchpriority="high">\n  </head>`));
+}
