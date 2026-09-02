@@ -1,36 +1,31 @@
-# Voice Riff Loop handoff
+# Voice Riff Loop verification handoff — FAIL
 
-## What shipped
+- Candidate: `9e25c68e7b8b780456144367092976a42298ddd1`
+- URL: `https://voice-riff-loop.sociobot.in`
+- Verified: 2026-09-02 UTC
+- Decision: **FAIL — do not release**
 
-- A mobile-first, local-first PWA for recording a voice, cutting four pads, playing a fixed-tempo 16-step loop, and exporting a 16-second WAV.
-- IndexedDB persistence for audio and pad settings. Demo mode is isolated in `demo:voice-riff-loop` and has a reset control.
-- Explicit microphone permission flow, useful empty/error states, keyboard-native controls, privacy and terms routes, manifest, service worker, offline page, social metadata, sitemap, and static deployment headers.
-- An optional $9 one-time Sociobot supporter edition for custom pad labels. The free instrument retains recording, cuts, looping, and WAV export.
-- Original cassette-zine hero art at `src/assets/hero-cassette.webp` (269 KB). Prompt and factory-image provenance are stored in `src/assets/hero-cassette.json` and design notes in `design.md`.
+Independent QA is complete. The first-read/demo gate passes, all declared test commands exit successfully, the clean build passes, core recording works, live assets match the candidate byte-for-byte, and warmed demo offline reload works. The candidate nevertheless has release blockers:
 
-## Verify
+1. “Export 16-second WAV” produces 17.143 s at 112 BPM, 25.263 s at 76 BPM, and 12.308 s at 156 BPM. Its claim test only checks that a download exists; 12.308 s also violates the brief's 15-second minimum.
+2. The live $9 buy action returns HTTP 404 from the Sociobot checkout endpoint.
+3. “Nothing leaves the device” is false for license restore, which sends the token to `api.sociobot.in`; the privacy page does not disclose it.
+4. Lighthouse performance is 0/100 with `NO_LCP` because the initial automatic main focus terminates LCP observation. The same focus makes the first Tab skip the skip link/header.
+5. Mobile touch targets, focus-indicator contrast, and reduced-motion behavior fail the attached accessibility baseline.
+6. Landing/README claims are missing from `.factory/claims.json` and lack one tagged observable test each.
+7. `/404.html` and `/offline.html` log CSP errors and render unstyled; unknown routes return 200.
+
+Other findings: hashed assets receive only 30-second caching; there is no update-available UI; a new license verification blocks first paint; the default WAV hard-clips 3.797% of samples.
+
+Verification commands:
 
 ```sh
-npm install
+npm ci
 npm test
 npm run build
 npm run test:browser
 ```
 
-Verified locally on 2026-09-02:
+All four exact commands in `.factory/claims.json` were also run separately. The billing verifier allowed 30 rapid requests and returned 429 on the 31st with `Retry-After: 3`.
 
-- `npm test`: 2 passing unit tests.
-- `npm run build`: passes; `dist/index.html` is at the deploy root.
-- `npm run test:browser`: 5 passing tests for sample loading, WAV download, offline demo reload, same-origin-only requests, and axe accessibility.
-- Production bundle: JS 6.85 KB gzip, CSS 2.65 KB gzip, hero 269 KB WebP. This meets the static budgets.
-
-## Known gaps
-
-- Browser microphone formats and live timing vary by device. If decode fails, the app tells the maker to try a shorter recording.
-- The loop is browser-scheduled, so it is intentionally a sketch instrument rather than a latency guarantee.
-- Lighthouse was not run in this container. The Playwright axe scan passes with no serious or critical findings.
-
-## Next steps
-
-- Factory deployment should use `dist/` and retain `staticwebapp.config.json` headers.
-- Register the paid product with the factory billing flow before exposing the checkout link publicly.
+Full evidence and reproduction details are in [.factory/verification.md](verification.md). No product code was modified.
