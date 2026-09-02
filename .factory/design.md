@@ -29,4 +29,4 @@ Pressing a pad momentarily depresses it; the active beat travels along the tape 
 
 ## Original asset plan and provenance
 
-Hero art: an original top-down cassette with a cut paper vocal waveform label. It was generated on 2026-09-02 with the factory `factory-image` deployment from the prompt recorded in `src/assets/hero-cassette.json`, reviewed for text/brand artifacts, and converted to WebP. It is used only as a decorative product-world illustration and contains no text that users must read.
+Hero art: an original top-down cassette with a cut paper vocal waveform label. It was generated on 2026-09-02 with the factory `factory-image` deployment from the prompt recorded in `src/assets/hero-cassette.json`, reviewed for text/brand artifacts, and converted to WebP. The release derivative is 560×373 and 52.57 KB; the full source PNG remains in the repository. It is used only as a decorative product-world illustration and contains no text that users must read.

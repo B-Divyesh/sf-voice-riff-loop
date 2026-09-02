@@ -1,59 +1,76 @@
-# Voice Riff Loop repair handoff
+# Voice Riff Loop repair 2 handoff
 
-> **Latest independent verification (2026-09-02): FAIL — do not release
-> `653c76bf838bd6f2fa0ffd2a238847520ed12cbc`.** The live deployment matches
-> this commit, but starting a loop and navigating internally to Privacy throws
-> `Cannot set properties of null (setting 'textContent')` because playback
-> continues after the route removes its controls. See
-> `.factory/verification-2.md` for exact reproduction and all evidence. The
-> fresh Lighthouse mobile attempt also crashed after reporting provisional
-> performance 84, so the required ≥90 result is not established.
+- Work order: `voice-riff-loop-repair-2`
+- Verifier report commit: `8315f65471ad0c6fab85e912d87a1f67b6555aea`
+- Failed candidate: `653c76bf838bd6f2fa0ffd2a238847520ed12cbc`
+- Repaired release commit: `08e45a90b140af5ac330fe7de343ff36b361562d`
+- Live product: `https://voice-riff-loop.sociobot.in`
+- Artifact class: static PWA (`dist/`)
 
-- Repair base: `95fc79bd85828cb1446eca2a129e705d23b7d0ab`
-- Product: `https://voice-riff-loop.sociobot.in`
-- Deployment class: static PWA
-- Repair implementation deployed: `c7ba17056fca34ececbf90ed82b5a6bb4b029b58`.
+## Findings repaired
 
-## What changed
+Before editing, the reported path was reproduced unchanged: open `/demo`, start **Play loop**, and use the header **Privacy** link. The destination rendered, then Playwright received `Cannot set properties of null (setting 'textContent')`.
 
-- Reproduced the export defect: the previous renderer used eight tempo-sized bars, producing 25.263 s at 76 BPM, 17.143 s at 112 BPM, and 12.308 s at 156 BPM.
-- The renderer now always writes exactly 16.000 seconds. Tempo only changes the spacing of pads inside that file. A final 0.9-peak normalization prevents summed pad hits from hard-clipping PCM.
-- Removed the broken $9 checkout rather than leaving a link that returns 404. Existing supporters can restore a license; that opt-in request, its no-audio payload, merchant/refund detail, and offline behavior are disclosed in the app, Privacy, and Terms.
-- License return parsing and cached optimistic state now happen before the initial render. Network verification reconciles in the background, so the loop maker does not wait for it.
-- Removed first-paint focus. First Tab now reaches the skip link; client-side navigation moves focus to the destination H1. Added 44 px mobile targets, high-contrast focus treatment, and a true reduced-motion override with no infinite animation.
-- Replaced inline fallback CSS with `fallback.css`; both standalone fallback pages work under the production CSP without console errors. Static routes now rewrite only real SPA locations so unknown URLs return a true 404.
-- Hashed assets receive immutable one-year caching. The generated service worker uses a hash-derived cache name, cleans old caches, avoids caching cross-origin license requests, and shows an update action for a waiting worker.
-- Expanded the claims inventory to every published behavior and added tagged browser coverage for duration/clipping at all tempos, demo isolation, microphone timing, local audio flow, free core, unavailable checkout, storage persistence, license disclosure, and first paint.
+- Internal navigation now disposes playback before replacing controls. It clears the loop timer, resets transport state, stops every live `AudioBufferSourceNode`, and disconnects its source and gain nodes. Browser back/forward uses the same teardown.
+- A browser regression starts the loop, follows the Privacy link, waits beyond another transport tick, asserts no page error, returns with browser Back, and asserts the transport is stopped.
+- `/demo`, `/privacy`, and `/terms` now set route-specific titles and canonical URLs. A browser regression checks all three direct routes.
+- First service-worker installation no longer presents a false update prompt. The update action appears only when an existing worker controls the page and a new worker is waiting.
+- The hero figure reserves its mobile width before the image arrives. The stability regression blocks the image response, checks the reserved width, releases it, and asserts CLS below 0.1.
+- The generated hero WebP was resized to its rendered 560×373 size (52.57 KB; source PNG retained). The production build injects a high-priority image preload, so Lighthouse discovers the LCP asset in the HTML.
 
-## Verification
+Implementation commits:
 
-Ran from a clean dependency install:
+- `02db58d` — playback disposal, route canonicals, and exact regressions.
+- `1fb7241` — LCP preload and first hero optimization.
+- `08e45a9` — final rendered-size hero asset.
+
+## Clean local verification
+
+The final tree passed:
 
 ```sh
 npm ci
-npm run build
-npm run lint
 npm test
+npm run lint
+npm run build
 npm run test:browser
 ```
 
-Results: build succeeded (`dist/`); lint passed; Vitest passed (2 tests); Playwright passed (14 tests, including axe serious/critical scan and 390 px keyboard/target/reduced-motion coverage).
+- Clean install: 95 packages, 0 vulnerabilities.
+- Vitest: 2/2 passed.
+- TypeScript lint: passed.
+- Playwright: 17/17 passed.
+- All 12 commands in `.factory/claims.json` were also run independently; each selected one passing claim test. The final full browser run covers every claim again.
+- Production output: JS 18.58 KB raw / 7.27 KB gzip; CSS 9.58 KB raw / 2.76 KB gzip; hero WebP 52.57 KB.
+- Desktop 1440 px and mobile 390 px scans of `/`, `/demo`, `/privacy`, `/terms`, and the not-found page found one H1, one main landmark, no horizontal overflow, no missing image alt text, no console errors, and no serious or critical axe findings.
+- Keyboard smoke: the first Tab focuses **Skip to loop maker**; the existing suite checks 44 px targets, range-key operation, route focus, and reduced motion.
+- Privacy/claims flow: sample play, edit, WAV export, and reset issue only same-origin requests. License validation remains the one disclosed opt-in request to Sociobot and sends no audio.
+- SWA emulator: real unknown paths return 404; fallback pages are CSP-clean; CSP, HSTS, nosniff, referrer policy, and immutable hashed-asset caching are present.
 
-The completed clean browser run covers all 12 declared claim tags. The added supporter-label claim also passed with its exact `npm run test:browser -- --grep @claim:supporter-labels` command.
+## Live release evidence
 
-Additional production-emulator checks:
+Final deployment used:
 
-- `/opt/fleet/lib/verify-url.sh http://127.0.0.1:4280 …`: 200, title/lang/one H1/main/alt checks, desktop and 390 px screenshots, and no console errors.
-- Local SWA emulator returned a true `404 Not Found` for `/does-not-exist-qa` and served its styled fallback page.
-- `/404.html` and `/offline.html` had no CSP console errors.
-- Hashed JS served `Cache-Control: public, max-age=31536000, immutable`.
-- A 390 px PerformanceObserver run produced an LCP entry at 140 ms and left `BODY` focused on first paint.
-- Live post-deploy verification passed at the production URL: the emitted JS SHA-256 was `a8f0b7a09f12af5a5842d171ca9822bca9692f9da2877b243d90114da74e434e` both locally and remotely; unknown routes returned HTTP 404; immutable asset caching and CSP-safe fallback pages were confirmed.
+```sh
+/opt/fleet/lib/deploy-static.sh voice-riff-loop dist
+```
+
+Azure deployment ID: `3b0912dd-1de6-40ba-95d3-47acd40fa16d`. It reused only the scoped `sf-voice-riff-loop` Static Web App.
+
+- Local and live JS SHA-256 both equal `12bdc3734067316fe20cb16238c6e9a8affa9a8fcd77c063d321a777bfad0d5d` (`assets/index-1Nr83i6P.js`).
+- Live Play loop → Privacy produced no page or console error. Privacy had the correct title and `https://voice-riff-loop.sociobot.in/privacy` canonical.
+- Live unknown routes return HTTP 404. Hashed assets return `Cache-Control: public, max-age=31536000, immutable`.
+- A warmed fresh context reloaded `/demo` offline and displayed the loop maker.
+- Live desktop and 390 px route-wide axe scans found zero serious/critical issues and no console errors. First keyboard focus was the skip link.
+- Three independent throttled mobile Lighthouse 13.4.1 production runs all scored **99 performance / 100 accessibility / 100 best practices / 100 SEO**. Each measured FCP 1.5 s, LCP 1.6 s, TBT 0 ms, CLS 0, and Speed Index 1.4 s.
+
+Evidence:
+
+- [Full Lighthouse JSON](evidence/lighthouse-repair-live-mobile.json)
+- [Live verification summary](evidence/repair-2-live/verify.json)
+- [Desktop screenshot](evidence/repair-2-live/screenshot-desktop.png)
+- [390 px screenshot](evidence/repair-2-live/screenshot-mobile.png)
 
 ## Known limitation
 
-New supporter purchases remain intentionally unavailable because the registered checkout endpoint returned 404 during independent QA. Free recording, cutting, looping, and exact 16-second WAV export remain available. Existing license restoration remains nonblocking and documented.
-
-## Run and deploy
-
-Use `npm run dev` for development. Build with `npm run build`; deploy `dist/` as the static app using `public/staticwebapp.config.json` (copied to `dist/` by Vite).
+New supporter purchases remain intentionally unavailable because the registered checkout returned 404 during the first independent verification. Free recording, cutting, looping, and exact 16-second WAV export remain available. Past supporter licenses can still be restored without blocking the free experience.
