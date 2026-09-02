@@ -1,5 +1,14 @@
 # Voice Riff Loop repair handoff
 
+> **Latest independent verification (2026-09-02): FAIL — do not release
+> `653c76bf838bd6f2fa0ffd2a238847520ed12cbc`.** The live deployment matches
+> this commit, but starting a loop and navigating internally to Privacy throws
+> `Cannot set properties of null (setting 'textContent')` because playback
+> continues after the route removes its controls. See
+> `.factory/verification-2.md` for exact reproduction and all evidence. The
+> fresh Lighthouse mobile attempt also crashed after reporting provisional
+> performance 84, so the required ≥90 result is not established.
+
 - Repair base: `95fc79bd85828cb1446eca2a129e705d23b7d0ab`
 - Product: `https://voice-riff-loop.sociobot.in`
 - Deployment class: static PWA
