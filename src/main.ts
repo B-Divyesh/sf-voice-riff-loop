@@ -83,7 +83,7 @@ async function render() {
   else {
     const demo = isDemoPath();
     if (!state || state.demo !== demo) await initialize(demo);
-    app.innerHTML = `${header()}<main id="main" tabindex="-1">${demo ? demoBanner() : heroSection()}${maker(state)}${demo ? '' : howItWorks()}</main>${footer()}`;
+    app.innerHTML = `${header()}<main id="main" tabindex="-1">${demo ? '<h1 class="sr-only">Make a rhythm loop from your voice</h1>' + demoBanner() : heroSection()}${maker(state)}${demo ? '' : howItWorks()}</main>${footer()}`;
     drawWave();
   }
   bind();
