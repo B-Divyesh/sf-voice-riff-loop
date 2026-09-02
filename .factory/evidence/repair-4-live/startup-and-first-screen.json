@@ -1,0 +1,110 @@
+{
+  "startup": {
+    "runs": 20,
+    "failures": 0,
+    "details": [
+      {
+        "run": 1,
+        "errors": []
+      },
+      {
+        "run": 2,
+        "errors": []
+      },
+      {
+        "run": 3,
+        "errors": []
+      },
+      {
+        "run": 4,
+        "errors": []
+      },
+      {
+        "run": 5,
+        "errors": []
+      },
+      {
+        "run": 6,
+        "errors": []
+      },
+      {
+        "run": 7,
+        "errors": []
+      },
+      {
+        "run": 8,
+        "errors": []
+      },
+      {
+        "run": 9,
+        "errors": []
+      },
+      {
+        "run": 10,
+        "errors": []
+      },
+      {
+        "run": 11,
+        "errors": []
+      },
+      {
+        "run": 12,
+        "errors": []
+      },
+      {
+        "run": 13,
+        "errors": []
+      },
+      {
+        "run": 14,
+        "errors": []
+      },
+      {
+        "run": 15,
+        "errors": []
+      },
+      {
+        "run": 16,
+        "errors": []
+      },
+      {
+        "run": 17,
+        "errors": []
+      },
+      {
+        "run": 18,
+        "errors": []
+      },
+      {
+        "run": 19,
+        "errors": []
+      },
+      {
+        "run": 20,
+        "errors": []
+      }
+    ]
+  },
+  "firstScreen": [
+    {
+      "text": "It opens four ready-cut voice sounds.",
+      "bottom": 551.0625,
+      "inViewport": true
+    },
+    {
+      "text": "Audio stays in this browser",
+      "bottom": 611.0625,
+      "inViewport": true
+    },
+    {
+      "text": "Works offline after first visit",
+      "bottom": 653.0625,
+      "inViewport": true
+    },
+    {
+      "text": "Core loop tools are free",
+      "bottom": 695.0625,
+      "inViewport": true
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "recording": {
+    "audioType": "audio/webm;codecs=opus",
+    "audioSize": 5890,
+    "duration": 0.84,
+    "pads": 4,
+    "playEnabledAfterReload": true
+  },
+  "transfer": {
+    "tempo": "120",
+    "start": "0.12",
+    "playEnabled": true,
+    "survivedReload": true
+  },
+  "license": {
+    "requests": [
+      {
+        "url": "https://api.sociobot.in/api/v1/products/voice-riff-loop/verify?license=qa-browser-90933b0",
+        "method": "GET",
+        "postData": null
+      }
+    ],
+    "status": 200,
+    "headers": {
+      "access-control-allow-credentials": "true",
+      "access-control-allow-origin": "https://voice-riff-loop.sociobot.in",
+      "cache-control": "no-store",
+      "content-length": "52",
+      "content-type": "application/json",
+      "date": "Wed, 02 Sep 2026 07:26:44 GMT",
+      "set-cookie": "ARRAffinity=27a68b7e77a8b7692bcb4c16e2a8a32d44ecdf1f351d0e078d158af264a88edc;Path=/;HttpOnly;Secure;Domain=api.sociobot.in\nARRAffinitySameSite=27a68b7e77a8b7692bcb4c16e2a8a32d44ecdf1f351d0e078d158af264a88edc;Path=/;HttpOnly;SameSite=None;Secure;Domain=api.sociobot.in",
+      "vary": "origin, access-control-request-method, access-control-request-headers"
+    },
+    "urlAfter": "https://voice-riff-loop.sociobot.in/"
+  },
+  "metadata": {
+    "manifestUrl": "https://voice-riff-loop.sociobot.in/manifest.webmanifest",
+    "manifestErrors": [],
+    "title": "Voice Riff Loop — Make a voice rhythm loop",
+    "lang": "en",
+    "h1Count": 1
+  },
+  "navigation": {
+    "privacy": {
+      "url": "https://voice-riff-loop.sociobot.in/privacy",
+      "title": "Privacy — Voice Riff Loop",
+      "focused": "H1:Your recordings stay in this browser"
+    },
+    "back": {
+      "url": "https://voice-riff-loop.sociobot.in/",
+      "title": "Voice Riff Loop — Make a voice rhythm loop"
+    }
+  },
+  "interaction": {
+    "maxEventDuration": 16
+  },
+  "errors": []
+}

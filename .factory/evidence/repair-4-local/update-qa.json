@@ -1,0 +1,12 @@
+{
+  "oldCaches": [
+    "voice-riff-loop-qa-old"
+  ],
+  "updateShown": true,
+  "reloadWithWaitingWorkerErrors": [],
+  "newCaches": [
+    "voice-riff-loop-1fe54d9cbe7e"
+  ],
+  "pads": 4,
+  "activeScript": "http://127.0.0.1:4175/sw.js"
+}
