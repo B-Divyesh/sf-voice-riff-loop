@@ -1,0 +1,190 @@
+{
+  "firstRead": {
+    "status": 200,
+    "title": "Voice Riff Loop — Make a voice rhythm loop",
+    "h1": [
+      "Make a rhythm loop from your voice"
+    ],
+    "audience": "For new electronic-music makers who want a first sketch before learning a DAW.",
+    "primary": "Try it with sample data",
+    "primaryVisible": true,
+    "primaryInViewport": true
+  },
+  "demo": {
+    "url": "https://voice-riff-loop.sociobot.in/demo",
+    "banner": "Demo — sample data, separate from your project",
+    "pads": [
+      "THUMP",
+      "TSS",
+      "AH",
+      "HUM"
+    ],
+    "playEnabled": true,
+    "databasesAfterHome": [
+      "demo:voice-riff-loop",
+      "voice-riff-loop"
+    ],
+    "directDatabases": [
+      "demo:voice-riff-loop"
+    ]
+  },
+  "e2e": {
+    "wav": {
+      "filename": "voice-riff-loop.wav",
+      "bytes": 1411244,
+      "signature": "RIFF",
+      "seconds": 16
+    },
+    "crossedTrim": {
+      "start": "0.97",
+      "end": "1",
+      "readout": "PAD 1 · 0.97–1.00 SEC"
+    },
+    "invalidImportRecovery": "That project file could not be imported. Choose a Voice Riff Loop project file.",
+    "routeWhilePlaying": "no page error",
+    "permissionDenialRecovery": "clear error followed by successful sample load"
+  },
+  "accessibility": [
+    {
+      "viewport": 390,
+      "path": "/",
+      "serious": [],
+      "targetFailures": [],
+      "overflow": false
+    },
+    {
+      "viewport": 390,
+      "path": "/demo",
+      "serious": [],
+      "targetFailures": [],
+      "overflow": false
+    },
+    {
+      "viewport": 390,
+      "path": "/privacy",
+      "serious": [],
+      "targetFailures": [],
+      "overflow": false
+    },
+    {
+      "viewport": 390,
+      "path": "/terms",
+      "serious": [],
+      "targetFailures": [],
+      "overflow": false
+    },
+    {
+      "viewport": 390,
+      "path": "/not-a-route",
+      "serious": [],
+      "targetFailures": [],
+      "overflow": false
+    },
+    {
+      "viewport": 390,
+      "path": "/404.html",
+      "serious": [],
+      "targetFailures": [],
+      "overflow": false
+    },
+    {
+      "viewport": 1440,
+      "path": "/",
+      "serious": [],
+      "targetFailures": [],
+      "overflow": false
+    },
+    {
+      "viewport": 1440,
+      "path": "/demo",
+      "serious": [],
+      "targetFailures": [],
+      "overflow": false
+    },
+    {
+      "viewport": 1440,
+      "path": "/privacy",
+      "serious": [],
+      "targetFailures": [],
+      "overflow": false
+    },
+    {
+      "viewport": 1440,
+      "path": "/terms",
+      "serious": [],
+      "targetFailures": [],
+      "overflow": false
+    },
+    {
+      "viewport": 1440,
+      "path": "/not-a-route",
+      "serious": [],
+      "targetFailures": [],
+      "overflow": false
+    },
+    {
+      "viewport": 1440,
+      "path": "/404.html",
+      "serious": [],
+      "targetFailures": [],
+      "overflow": false
+    }
+  ],
+  "mobile": {
+    "viewport": [
+      390,
+      844
+    ],
+    "scrollWidth": 390,
+    "recordingAnimation": "none",
+    "transitionDuration": "0s",
+    "errors": [
+      "TypeError: Cannot read properties of undefined (reading 'duration')\n    at H (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:4002)\n    at async W (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2834)\n    at async p (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2278)"
+    ]
+  },
+  "keyboard": {
+    "firstTab": "Skip to loop maker",
+    "skipTarget": "#main",
+    "tempoHome": "76",
+    "tempoEnd": "156",
+    "focusStyle": {
+      "outline": "rgb(215, 233, 75) solid 4px",
+      "outlineOffset": "3px"
+    },
+    "playSpace": true
+  },
+  "privacy": {
+    "requestCount": 4,
+    "origins": [
+      "https://voice-riff-loop.sociobot.in"
+    ],
+    "requests": [
+      {
+        "url": "https://voice-riff-loop.sociobot.in/",
+        "method": "GET",
+        "type": "document"
+      },
+      {
+        "url": "https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js",
+        "method": "GET",
+        "type": "script"
+      },
+      {
+        "url": "https://voice-riff-loop.sociobot.in/assets/index-Cmh5SwOF.css",
+        "method": "GET",
+        "type": "stylesheet"
+      },
+      {
+        "url": "https://voice-riff-loop.sociobot.in/assets/hero-cassette-Db6XZahr.webp",
+        "method": "GET",
+        "type": "image"
+      }
+    ],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  "pwa": {},
+  "errors": [
+    "Error: mobile overflow or errors\n    at assert (file:///work/repo/.factory/qa-4/live-qa.mjs:13:64)\n    at file:///work/repo/.factory/qa-4/live-qa.mjs:173:3"
+  ]
+}
