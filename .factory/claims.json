@@ -1,30 +1,13 @@
 [
-  {
-    "id": "sample-loop",
-    "claim": "The demo opens four ready-cut sample sounds.",
-    "where": "landing action and demo loop maker",
-    "test": "npm run test:browser -- --grep @claim:sample-loop",
-    "sandbox": "fresh browser context at /demo"
-  },
-  {
-    "id": "wav-export",
-    "claim": "Exports a 16-second WAV.",
-    "where": "loop maker export button",
-    "test": "npm run test:browser -- --grep @claim:wav-export",
-    "sandbox": "demo data; trigger the exported download"
-  },
-  {
-    "id": "offline-reload",
-    "claim": "Works offline after the first visit.",
-    "where": "landing facts and README",
-    "test": "npm run test:browser -- --grep @claim:offline-reload",
-    "sandbox": "fresh browser context at /demo, then offline reload"
-  },
-  {
-    "id": "local-only",
-    "claim": "Nothing leaves your device.",
-    "where": "landing facts and privacy page",
-    "test": "npm run test:browser -- --grep @claim:local-only",
-    "sandbox": "fresh browser context at /demo; inspect all outgoing requests"
-  }
+  {"id":"sample-loop","claim":"The demo opens four ready-cut sample sounds.","where":"landing action and demo loop maker","test":"npm run test:browser -- --grep @claim:sample-loop","sandbox":"fresh browser context at /demo"},
+  {"id":"wav-export","claim":"Exports a 16-second WAV at every tempo.","where":"loop maker export button","test":"npm run test:browser -- --grep @claim:wav-export","sandbox":"demo data; export at 76, 112, and 156 BPM; parse WAV duration and peak PCM"},
+  {"id":"offline-reload","claim":"Works offline after the first visit.","where":"landing fact and README","test":"npm run test:browser -- --grep @claim:offline-reload","sandbox":"fresh browser context at /demo, then offline reload"},
+  {"id":"demo-isolation","claim":"Demo changes stay separate from your project and Reset demo restores the sample.","where":"demo banner and README","test":"npm run test:browser -- --grep @claim:demo-isolation","sandbox":"fresh browser context at /demo; change tempo, reset, then start for real"},
+  {"id":"microphone-on-tap","claim":"Microphone permission is requested only after you tap Record your voice.","where":"loop maker","test":"npm run test:browser -- --grep @claim:microphone-on-tap","sandbox":"fresh demo; spy on getUserMedia before and after the record tap"},
+  {"id":"local-audio","claim":"Audio stays in this browser.","where":"landing fact and privacy page","test":"npm run test:browser -- --grep @claim:local-audio","sandbox":"fresh demo; play, edit, export, reset, and inspect all requests"},
+  {"id":"free-core","claim":"Recording, cutting, looping, and WAV export are free.","where":"supporter licenses section and README","test":"npm run test:browser -- --grep @claim:free-core","sandbox":"fresh demo without a license; assert core controls are enabled"},
+  {"id":"checkout-unavailable","claim":"New supporter purchases are unavailable.","where":"supporter licenses section and README","test":"npm run test:browser -- --grep @claim:checkout-unavailable","sandbox":"fresh landing page; assert notice and no checkout link"},
+  {"id":"project-storage","claim":"Audio, pad cuts, and tempo are stored in this browser's IndexedDB.","where":"privacy page and README","test":"npm run test:browser -- --grep @claim:project-storage","sandbox":"fresh real project; load sample, change tempo, reload"},
+  {"id":"license-token","claim":"Restoring a supporter license sends only its token to Sociobot for validation.","where":"supporter licenses section and privacy page","test":"npm run test:browser -- --grep @claim:license-token","sandbox":"fresh context; restore fixture token and intercept validation request"},
+  {"id":"license-first-paint","claim":"A license check does not block the loop maker from loading.","where":"license return flow","test":"npm run test:browser -- --grep @claim:license-first-paint","sandbox":"fresh context with a delayed fixture validation response"}
 ]

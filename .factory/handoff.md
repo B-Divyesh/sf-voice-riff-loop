@@ -1,31 +1,49 @@
-# Voice Riff Loop verification handoff — FAIL
+# Voice Riff Loop repair handoff
 
-- Candidate: `9e25c68e7b8b780456144367092976a42298ddd1`
-- URL: `https://voice-riff-loop.sociobot.in`
-- Verified: 2026-09-02 UTC
-- Decision: **FAIL — do not release**
+- Repair base: `95fc79bd85828cb1446eca2a129e705d23b7d0ab`
+- Product: `https://voice-riff-loop.sociobot.in`
+- Deployment class: static PWA
+- Status: repaired and deployed from this handoff commit.
 
-Independent QA is complete. The first-read/demo gate passes, all declared test commands exit successfully, the clean build passes, core recording works, live assets match the candidate byte-for-byte, and warmed demo offline reload works. The candidate nevertheless has release blockers:
+## What changed
 
-1. “Export 16-second WAV” produces 17.143 s at 112 BPM, 25.263 s at 76 BPM, and 12.308 s at 156 BPM. Its claim test only checks that a download exists; 12.308 s also violates the brief's 15-second minimum.
-2. The live $9 buy action returns HTTP 404 from the Sociobot checkout endpoint.
-3. “Nothing leaves the device” is false for license restore, which sends the token to `api.sociobot.in`; the privacy page does not disclose it.
-4. Lighthouse performance is 0/100 with `NO_LCP` because the initial automatic main focus terminates LCP observation. The same focus makes the first Tab skip the skip link/header.
-5. Mobile touch targets, focus-indicator contrast, and reduced-motion behavior fail the attached accessibility baseline.
-6. Landing/README claims are missing from `.factory/claims.json` and lack one tagged observable test each.
-7. `/404.html` and `/offline.html` log CSP errors and render unstyled; unknown routes return 200.
+- Reproduced the export defect: the previous renderer used eight tempo-sized bars, producing 25.263 s at 76 BPM, 17.143 s at 112 BPM, and 12.308 s at 156 BPM.
+- The renderer now always writes exactly 16.000 seconds. Tempo only changes the spacing of pads inside that file. A final 0.9-peak normalization prevents summed pad hits from hard-clipping PCM.
+- Removed the broken $9 checkout rather than leaving a link that returns 404. Existing supporters can restore a license; that opt-in request, its no-audio payload, merchant/refund detail, and offline behavior are disclosed in the app, Privacy, and Terms.
+- License return parsing and cached optimistic state now happen before the initial render. Network verification reconciles in the background, so the loop maker does not wait for it.
+- Removed first-paint focus. First Tab now reaches the skip link; client-side navigation moves focus to the destination H1. Added 44 px mobile targets, high-contrast focus treatment, and a true reduced-motion override with no infinite animation.
+- Replaced inline fallback CSS with `fallback.css`; both standalone fallback pages work under the production CSP without console errors. Static routes now rewrite only real SPA locations so unknown URLs return a true 404.
+- Hashed assets receive immutable one-year caching. The generated service worker uses a hash-derived cache name, cleans old caches, avoids caching cross-origin license requests, and shows an update action for a waiting worker.
+- Expanded the claims inventory to every published behavior and added tagged browser coverage for duration/clipping at all tempos, demo isolation, microphone timing, local audio flow, free core, unavailable checkout, storage persistence, license disclosure, and first paint.
 
-Other findings: hashed assets receive only 30-second caching; there is no update-available UI; a new license verification blocks first paint; the default WAV hard-clips 3.797% of samples.
+## Verification
 
-Verification commands:
+Ran from a clean dependency install:
 
 ```sh
 npm ci
-npm test
 npm run build
+npm run lint
+npm test
 npm run test:browser
 ```
 
-All four exact commands in `.factory/claims.json` were also run separately. The billing verifier allowed 30 rapid requests and returned 429 on the 31st with `Retry-After: 3`.
+Results: build succeeded (`dist/`); lint passed; Vitest passed (2 tests); Playwright passed (13 tests, including axe serious/critical scan and 390 px keyboard/target/reduced-motion coverage).
 
-Full evidence and reproduction details are in [.factory/verification.md](verification.md). No product code was modified.
+All declared claim commands were run individually as `npm run test:browser -- --grep @claim:<id>`; the completed clean browser run also covers all 11 tags.
+
+Additional production-emulator checks:
+
+- `/opt/fleet/lib/verify-url.sh http://127.0.0.1:4280 …`: 200, title/lang/one H1/main/alt checks, desktop and 390 px screenshots, and no console errors.
+- Local SWA emulator returned a true `404 Not Found` for `/does-not-exist-qa` and served its styled fallback page.
+- `/404.html` and `/offline.html` had no CSP console errors.
+- Hashed JS served `Cache-Control: public, max-age=31536000, immutable`.
+- A 390 px PerformanceObserver run produced an LCP entry at 140 ms and left `BODY` focused on first paint.
+
+## Known limitation
+
+New supporter purchases remain intentionally unavailable because the registered checkout endpoint returned 404 during independent QA. Free recording, cutting, looping, and exact 16-second WAV export remain available. Existing license restoration remains nonblocking and documented.
+
+## Run and deploy
+
+Use `npm run dev` for development. Build with `npm run build`; deploy `dist/` as the static app using `public/staticwebapp.config.json` (copied to `dist/` by Vite).

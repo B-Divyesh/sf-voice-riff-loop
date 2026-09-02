@@ -47,19 +47,27 @@ export function wavBlob(data: Float32Array, sampleRate: number): Blob {
   return new Blob([bytes], { type: 'audio/wav' });
 }
 
-export function renderLoop(buffer: AudioBuffer, project: LoopProject, bars = 8): Blob {
-  const beat = 60 / project.tempo / 4;
-  const frames = Math.ceil(pattern.length * beat * bars * buffer.sampleRate);
+/** Render a fixed-length file. Tempo changes the rhythm inside the file, never its duration. */
+export function renderLoop(buffer: AudioBuffer, project: LoopProject, seconds = 16): Blob {
+  const stepSeconds = 60 / project.tempo / 4;
+  const frames = Math.round(seconds * buffer.sampleRate);
   const output = new Float32Array(frames);
   const source = buffer.getChannelData(0);
-  for (let bar = 0; bar < bars; bar++) {
-    pattern.forEach((padId, step) => {
-      const pad = project.pads[padId];
-      const from = Math.floor(pad.start * buffer.sampleRate);
-      const length = Math.min(Math.floor((pad.end - pad.start) * buffer.sampleRate), frames);
-      const at = Math.floor((bar * pattern.length + step) * beat * buffer.sampleRate);
-      for (let frame = 0; frame < length && at + frame < frames; frame++) output[at + frame] += source[from + frame] || 0;
-    });
+  let step = 0;
+  for (let at = 0; at < frames; at = Math.round(++step * stepSeconds * buffer.sampleRate)) {
+    const padId = pattern[step % pattern.length];
+    const pad = project.pads[padId];
+    const from = Math.floor(pad.start * buffer.sampleRate);
+    const length = Math.min(Math.floor((pad.end - pad.start) * buffer.sampleRate), frames - at);
+    for (let frame = 0; frame < length; frame++) output[at + frame] += source[from + frame] || 0;
+  }
+  // Dense, slow patterns can layer several cuts. Preserve the rhythm while
+  // leaving headroom instead of hard-clamping PCM samples at export time.
+  let peak = 0;
+  for (const value of output) peak = Math.max(peak, Math.abs(value));
+  if (peak > .9) {
+    const gain = .9 / peak;
+    for (let i = 0; i < output.length; i++) output[i] *= gain;
   }
   return wavBlob(output, buffer.sampleRate);
 }

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build && node scripts/postbuild.mjs",
+    "lint": "tsc --noEmit",
     "test": "vitest run",
     "test:browser": "playwright test"
   },
