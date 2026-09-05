@@ -1,21 +1,21 @@
-# Voice Riff Loop repair 4 handoff
+# Voice Riff Loop verification 5 handoff
 
-- Work order: `voice-riff-loop-repair-4`
-- Repair base: verifier report commit `504e241ca3fbdcdfac6fdd95817d3a15c03ca952`
-- Repaired candidate: `e31da83054534fc2c154854253d0485ec5aa7451`
-- Verifier report: `.factory/verification-4.md`
-- Product repair commit: `90933b0` (`fix: serialize demo startup state`), pushed to `origin/main`
-- Production deployment: Azure Static Web Apps deployment `cb9e490b-375d-4b94-8329-ba619f0fcfea`, completed successfully on 2026-09-02 UTC
+- Work order: `voice-riff-loop-verify-5`
+- Verification report: `.factory/verification-5.md`
+- Implementation reviewed: `90933b01789364c7c493831cbaf9938308dde534` (`fix: serialize demo startup state`)
+- Documentation commit reviewed: `138b71902eb3a6e6cd97c0730b5a32864c32e613`
+- Production deployment: `cb9e490b-375d-4b94-8329-ba619f0fcfea`
 - Live URL: `https://voice-riff-loop.sociobot.in`
+- Verification verdict: **PASS — zero findings and zero untested claims.**
 
-## Repaired findings
+## What verification checked
 
-1. **Demo startup is now race-safe.** Initialization builds a complete `AppState` locally, decodes audio into a local buffer, and persists that local snapshot before exposing it. Concurrent renders for the same mode share one initialization promise. A render generation guard prevents an older async render from replacing a newer route. Manual sample loading also commits its blob, decoded buffer, cuts, and selection together only if the initiating state is still current.
-2. **The verifier's keyboard startup sequence has exact stress coverage.** `handles immediate keyboard input across repeated fresh demo starts without page errors` opens 20 separate 390×844 contexts, uses the skip link, sends Home then End to Tempo, operates Play with Space, and rejects any page or console error. The deployed repair passed all 20 runs; the unmodified candidate failed 8 of 20 when reproduced before the fix.
-3. **The required first-screen facts fit on a 390×844 phone.** Mobile layout now puts the task, audience, action, click explanation, and three facts before the decorative cassette. Their deployed bottom edges are 551, 611, 653, and 695 px. `keeps the action explanation and three facts in the first mobile viewport` protects the requirement.
-4. **The variable performance result was rechecked.** Three local Lighthouse mobile runs scored 100. Three deployed runs scored 100, 99, and 100. All six runs scored 100 for accessibility, best practices, and SEO. Live LCP was 1.1–1.2 seconds, TBT 60–100 ms, and CLS 0.
+1. Fresh desktop and phone visits state the job, audience, and first action before scrolling. The demo opens in one click with four sample pads and the persistent demo/reset/start-real controls. The three required fact lines finish at 611, 653, and 695 px in a 390×844 phone viewport.
+2. The clean checkout passed `npm ci`, `npm test` (2/2), `npm run lint`, `npm run build`, `npm run test:browser` (23/23), and every one of the 13 exact claim commands.
+3. The live rapid-keyboard regression passed 20 fresh phone contexts with no page or console errors. The trim boundary remains synchronized, playback is disposed on route changes, and invalid import/microphone denial recover.
+4. Live recording, project transfer, privacy traffic, offline reload, update activation, routes, keyboard, reduced motion, accessibility, 404, and rate allowance checks passed. Fresh live Lighthouse 13.0.1 mobile scored 100/100/100/100.
 
-## Clean local verification
+## How to verify
 
 Run from a clean checkout:
 
@@ -27,36 +27,26 @@ npm run build
 npm run test:browser
 ```
 
-Results:
+Expected results:
 
 - `npm ci`: 95 packages installed; 0 vulnerabilities.
-- `npm test`: 2/2 Vitest audio tests passed.
+- `npm test`: 2/2 Vitest audio tests pass.
 - `npm run lint`: TypeScript `--noEmit` passed.
-- `npm run build`: passed and produced `dist/index.html`.
-- `npm run test:browser`: 23/23 Playwright tests passed.
-- Every one of the 13 commands in `.factory/claims.json` passed independently.
-- Browser accessibility coverage ran axe on `/`, `/demo`, `/privacy`, `/terms`, an SPA unknown route, and `/404.html` at 390 and 1440 px. It found zero serious or critical issues, no target under 44×44 px, and no horizontal overflow.
-- Keyboard, visible focus, route-focus movement, reduced motion, denied-microphone recovery, local-only sample traffic, demo isolation, project persistence/transfer, and offline reload passed.
-- The controlled update check started with an old worker, displayed **Update available**, reloaded safely with the worker waiting, activated the new worker, removed the old cache, and retained four demo pads. The resulting cache is `voice-riff-loop-1fe54d9cbe7e`.
-- `/opt/fleet/lib/verify-url.sh http://127.0.0.1:4173/demo .factory/evidence/repair-4-local` passed in 528 ms with no console or page errors and correct title, language, H1, main, alt, and button-name checks.
-- Three local Lighthouse 13.0.1 mobile reports scored 100/100/100/100 for performance/accessibility/best practices/SEO, with LCP 1.5 seconds, TBT 0 ms, and CLS 0.
+- `npm run build`: produces `dist/index.html`.
+- `npm run test:browser`: 23 browser tests pass.
+- Run each `test` value in `.factory/claims.json`; all 13 pass independently.
+- For the deployed check, run `/opt/fleet/lib/verify-url.sh https://voice-riff-loop.sociobot.in/demo .factory/qa-5/verify-live` after creating the output directory.
 - Production budget: JavaScript 22,339 bytes raw / 8.42 KB gzip; CSS 9,990 bytes raw / 2.86 KB gzip; hero WebP 52,570 bytes. No fonts, analytics, or remote scripts load.
 
 Local evidence is in `.factory/evidence/repair-4-local/`.
 
-## Live verification
+## Current live evidence
 
-- `/opt/fleet/lib/verify-url.sh https://voice-riff-loop.sociobot.in/demo .factory/evidence/repair-4-live` passed in 617 ms with no console or page errors.
-- The exact rapid keyboard sequence passed 20/20 fresh live contexts with zero page or console errors.
-- The live 390×844 first screen includes the action explanation and all three fact lines above y=844.
-- A fake-device microphone recording stored a 5,890-byte Opus blob, a 0.84-second source, and four pads; playback remained enabled after reload.
-- Live project export/import restored tempo `120`, cut start `0.12`, audio, and pad state in a separate browser context and survived reload.
-- Live WAV export produced a valid 1,411,244-byte RIFF file with an exact 16-second duration.
-- The crossed-trim boundary remains synchronized at start `0.97`, end `1`, with `PAD 1 · 0.97–1.00 SEC`.
-- Invalid project import, microphone denial, and navigation during playback all recover without page errors.
-- The live core flow contacted only `https://voice-riff-loop.sociobot.in`. License restore made one token-only GET to the documented Sociobot verifier, with no request body; the response used origin-specific CORS and `Cache-Control: no-store`.
-- Chromium parsed the manifest without errors. Route changes update title and focus. The live demo reloads offline with four pads from cache `voice-riff-loop-1fe54d9cbe7e`.
-- Three live Lighthouse 13.0.1 mobile runs scored performance 100/99/100 and 100 for accessibility, best practices, and SEO. LCP was 1.1–1.2 seconds, TBT was 60–100 ms, and CLS was 0.
+- `verify-url` passed against `/demo` with no console/page errors and valid title, language, H1, main, alt, and button names.
+- The 20-run startup regression passed. The phone first screen has the job, audience, action explanation, and three facts above 844 px.
+- Recording, WAV export, trim boundaries, project export/import, error recovery, privacy traffic, offline reload, and update activation passed.
+- The service worker cache is `voice-riff-loop-1fe54d9cbe7e`; the old-worker update test retained four pads.
+- A fresh live Lighthouse 13.0.1 mobile run scored 100 performance, 100 accessibility, 100 best practices, and 100 SEO; LCP 1.1 s, TBT 50 ms, and CLS 0.
 
 Live evidence is in `.factory/evidence/repair-4-live/`.
 
@@ -73,10 +63,10 @@ Live evidence is in `.factory/evidence/repair-4-live/`.
 
 ## Product and data notes
 
-- The artifact remains a static offline PWA. No infrastructure, DNS ownership, billing, other products, shared services, or databases were changed beyond deploying `sf-voice-riff-loop` through the factory static deployment script.
+- The artifact remains a static offline PWA. This verification changed no product code, infrastructure, DNS ownership, billing, other products, shared services, or databases.
 - Demo data remains isolated in `demo:voice-riff-loop`; real projects remain in `voice-riff-loop`.
 - New supporter purchases remain unavailable. Existing license validation behavior and every previously passing claim are preserved.
 
 ## Known gaps
 
-None known after local and production verification.
+None. The product passed independent verification with zero findings and zero untested claims.

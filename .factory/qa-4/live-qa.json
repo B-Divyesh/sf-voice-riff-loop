@@ -138,9 +138,7 @@
     "scrollWidth": 390,
     "recordingAnimation": "none",
     "transitionDuration": "0s",
-    "errors": [
-      "TypeError: Cannot read properties of undefined (reading 'duration')\n    at H (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:4002)\n    at async W (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2834)\n    at async p (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2278)"
-    ]
+    "errors": []
   },
   "keyboard": {
     "firstTab": "Skip to loop maker",
@@ -165,12 +163,12 @@
         "type": "document"
       },
       {
-        "url": "https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js",
+        "url": "https://voice-riff-loop.sociobot.in/assets/index-yEkv5dPx.js",
         "method": "GET",
         "type": "script"
       },
       {
-        "url": "https://voice-riff-loop.sociobot.in/assets/index-Cmh5SwOF.css",
+        "url": "https://voice-riff-loop.sociobot.in/assets/index-DIBTEM4Q.css",
         "method": "GET",
         "type": "stylesheet"
       },
@@ -183,8 +181,17 @@
     "consoleErrors": [],
     "pageErrors": []
   },
-  "pwa": {},
-  "errors": [
-    "Error: mobile overflow or errors\n    at assert (file:///work/repo/.factory/qa-4/live-qa.mjs:13:64)\n    at file:///work/repo/.factory/qa-4/live-qa.mjs:173:3"
-  ]
+  "pwa": {
+    "offline": {
+      "heading": "Record, cut, and loop four sounds",
+      "pads": 4,
+      "cacheNamesBefore": [
+        "voice-riff-loop-1fe54d9cbe7e"
+      ]
+    },
+    "update": {
+      "evidence": "update-qa.json"
+    }
+  },
+  "errors": []
 }

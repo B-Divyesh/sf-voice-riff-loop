@@ -5,12 +5,10 @@
     "checkpoints": {
       "afterGoto": 0,
       "afterSkip": 0,
-      "afterTempo": 1,
-      "afterPlay": 1
+      "afterTempo": 0,
+      "afterPlay": 0
     },
-    "errors": [
-      "TypeError: Cannot read properties of undefined (reading 'duration')\n    at H (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:4002)\n    at async W (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2834)\n    at async p (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2278)"
-    ]
+    "errors": []
   },
   {
     "index": 1,
@@ -29,12 +27,10 @@
     "checkpoints": {
       "afterGoto": 0,
       "afterSkip": 0,
-      "afterTempo": 1,
-      "afterPlay": 1
+      "afterTempo": 0,
+      "afterPlay": 0
     },
-    "errors": [
-      "TypeError: Cannot read properties of undefined (reading 'duration')\n    at H (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:4002)\n    at async W (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2834)\n    at async p (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2278)"
-    ]
+    "errors": []
   },
   {
     "index": 3,
@@ -42,12 +38,10 @@
     "checkpoints": {
       "afterGoto": 0,
       "afterSkip": 0,
-      "afterTempo": 1,
-      "afterPlay": 1
+      "afterTempo": 0,
+      "afterPlay": 0
     },
-    "errors": [
-      "TypeError: Cannot read properties of undefined (reading 'duration')\n    at H (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:4002)\n    at async W (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2834)\n    at async p (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2278)"
-    ]
+    "errors": []
   },
   {
     "index": 4,
@@ -88,12 +82,10 @@
     "checkpoints": {
       "afterGoto": 0,
       "afterSkip": 0,
-      "afterTempo": 1,
-      "afterPlay": 1
+      "afterTempo": 0,
+      "afterPlay": 0
     },
-    "errors": [
-      "TypeError: Cannot read properties of undefined (reading 'duration')\n    at H (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:4002)\n    at async W (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2834)\n    at async p (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2278)"
-    ]
+    "errors": []
   },
   {
     "index": 8,
@@ -112,12 +104,10 @@
     "checkpoints": {
       "afterGoto": 0,
       "afterSkip": 0,
-      "afterTempo": 1,
-      "afterPlay": 1
+      "afterTempo": 0,
+      "afterPlay": 0
     },
-    "errors": [
-      "TypeError: Cannot read properties of undefined (reading 'duration')\n    at H (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:4002)\n    at async W (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2834)\n    at async p (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2278)"
-    ]
+    "errors": []
   },
   {
     "index": 10,
@@ -125,12 +115,10 @@
     "checkpoints": {
       "afterGoto": 0,
       "afterSkip": 0,
-      "afterTempo": 1,
-      "afterPlay": 1
+      "afterTempo": 0,
+      "afterPlay": 0
     },
-    "errors": [
-      "TypeError: Cannot read properties of undefined (reading 'duration')\n    at H (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:4002)\n    at async W (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2834)\n    at async p (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2278)"
-    ]
+    "errors": []
   },
   {
     "index": 11,
@@ -160,12 +148,10 @@
     "checkpoints": {
       "afterGoto": 0,
       "afterSkip": 0,
-      "afterTempo": 1,
-      "afterPlay": 1
+      "afterTempo": 0,
+      "afterPlay": 0
     },
-    "errors": [
-      "TypeError: Cannot read properties of undefined (reading 'duration')\n    at H (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:4002)\n    at async W (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2834)\n    at async p (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2278)"
-    ]
+    "errors": []
   },
   {
     "index": 14,
@@ -173,12 +159,10 @@
     "checkpoints": {
       "afterGoto": 0,
       "afterSkip": 0,
-      "afterTempo": 1,
-      "afterPlay": 1
+      "afterTempo": 0,
+      "afterPlay": 0
     },
-    "errors": [
-      "TypeError: Cannot read properties of undefined (reading 'duration')\n    at H (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:4002)\n    at async W (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2834)\n    at async p (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2278)"
-    ]
+    "errors": []
   },
   {
     "index": 15,
@@ -186,12 +170,10 @@
     "checkpoints": {
       "afterGoto": 0,
       "afterSkip": 0,
-      "afterTempo": 1,
-      "afterPlay": 1
+      "afterTempo": 0,
+      "afterPlay": 0
     },
-    "errors": [
-      "TypeError: Cannot read properties of undefined (reading 'duration')\n    at H (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:4002)\n    at async W (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2834)\n    at async p (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2278)"
-    ]
+    "errors": []
   },
   {
     "index": 16,
@@ -199,12 +181,10 @@
     "checkpoints": {
       "afterGoto": 0,
       "afterSkip": 0,
-      "afterTempo": 1,
-      "afterPlay": 1
+      "afterTempo": 0,
+      "afterPlay": 0
     },
-    "errors": [
-      "TypeError: Cannot read properties of undefined (reading 'duration')\n    at H (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:4002)\n    at async W (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2834)\n    at async p (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2278)"
-    ]
+    "errors": []
   },
   {
     "index": 17,
@@ -212,12 +192,10 @@
     "checkpoints": {
       "afterGoto": 0,
       "afterSkip": 0,
-      "afterTempo": 1,
-      "afterPlay": 1
+      "afterTempo": 0,
+      "afterPlay": 0
     },
-    "errors": [
-      "TypeError: Cannot read properties of undefined (reading 'duration')\n    at H (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:4002)\n    at async W (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2834)\n    at async p (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2278)"
-    ]
+    "errors": []
   },
   {
     "index": 18,
@@ -236,11 +214,9 @@
     "checkpoints": {
       "afterGoto": 0,
       "afterSkip": 0,
-      "afterTempo": 1,
-      "afterPlay": 1
+      "afterTempo": 0,
+      "afterPlay": 0
     },
-    "errors": [
-      "TypeError: Cannot read properties of undefined (reading 'duration')\n    at H (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:4002)\n    at async W (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2834)\n    at async p (https://voice-riff-loop.sociobot.in/assets/index-aMkriVeh.js:9:2278)"
-    ]
+    "errors": []
   }
 ]
