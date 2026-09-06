@@ -94,7 +94,8 @@ function pageTitle(route: string) {
   if (route === '/privacy') return 'Privacy — Voice Riff Loop';
   if (route === '/terms') return 'Terms — Voice Riff Loop';
   if (route === '/demo') return 'Demo — Voice Riff Loop';
-  return 'Voice Riff Loop — Make a voice rhythm loop';
+  if (route === '/') return 'Voice Riff Loop — Make a voice rhythm loop';
+  return 'Page not found — Voice Riff Loop';
 }
 
 function disposePlayback() {
@@ -163,7 +164,7 @@ async function render(moveFocus = false) {
   if (canonical) canonical.href = new URL(route === '/' ? '/' : route, 'https://voice-riff-loop.sociobot.in').href;
   if (path === '/privacy') app.innerHTML = privacyPage();
   else if (path === '/terms') app.innerHTML = termsPage();
-  else if (path !== '/' && path !== '/demo') app.innerHTML = `${header()}<main id="main" tabindex="-1" class="text-page"><h1>This tape side is blank</h1><p>That page is not part of Voice Riff Loop.</p><a class="button primary" href="/" data-link>Open the loop maker</a></main>${footer()}`;
+  else if (path !== '/' && path !== '/demo') app.innerHTML = `${header()}<main id="main" tabindex="-1" class="text-page"><h1>Page not found</h1><p>That page is not part of Voice Riff Loop.</p><a class="button primary" href="/" data-link>Open the loop maker</a></main>${footer()}`;
   else {
     const demo = isDemoPath();
     const nextState = !state || state.demo !== demo ? await initialize(demo) : state;

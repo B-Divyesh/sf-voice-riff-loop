@@ -154,6 +154,15 @@ test('sets the title and canonical URL for every app route', async ({ page }) =>
   }
 });
 
+test('explains missing pages in plain words and provides a way back', async ({ page }) => {
+  for (const path of ['/not-a-route', '/404.html']) {
+    await page.goto(path);
+    await expect(page).toHaveTitle('Page not found — Voice Riff Loop');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Page not found');
+    await expect(page.getByRole('link', { name: 'Open the loop maker' })).toHaveAttribute('href', '/');
+  }
+});
+
 test('keeps the first service worker install from shifting the mobile layout', async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
