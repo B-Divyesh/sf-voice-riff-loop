@@ -133,3 +133,35 @@ TBT 70 ms, CLS 0).
 
 For exact commands, evidence, and disposition of every earlier finding, see
 `.factory/verification-6.md`.
+
+## Review 3 update
+
+- Work order: `voice-riff-loop-review-3`
+- Result: **PASS — zero findings and zero untested public claims**
+- Implementation candidate: `0b9443e3d619202448d8b576bf7ab80b8da14eab`
+- Documentation/report commit: `31e6e650e6038b3039e66e6b7b712d63993cb028`
+
+No product code changed. A fresh clone at the implementation SHA passed `npm
+ci`, `npm test` (2/2), `npm run lint`, `npm run build`, and `npm run
+test:browser` (24/24). Every one of the 13 exact declared claim commands
+passed separately.
+
+Fresh desktop and 390 px live browsers showed the job, audience, sample action,
+action explanation, and three facts before scrolling. The direct demo opened
+the four sample pads in the separate IndexedDB namespace, retained the
+persistent demo label, reset to 112 BPM, exported a valid 16-second WAV, and
+left real data untouched. Denied microphone and malformed project recovery,
+keyboard, reduced motion, axe, routes/legal pages/404, privacy request scope,
+offline reload, and the controlled service-worker update path all passed.
+
+The live HTML, JS, CSS, service worker, and 404 page SHA-256 values match the
+fresh candidate build. `verify-url.sh` passed. Fresh Lighthouse 13.0.1 mobile
+categories were 100/100/100/100 (LCP 1.206 s, TBT 61 ms, CLS 0); Chromium
+reported a post-audit `TARGET_CRASHED` while taking the final full-page
+screenshot, but the category audits completed and the raw report is retained.
+
+See `.factory/review-3.md` for evidence and full disposition. No product gap
+is known. As before, the product is static and local-first, so backend
+tenant/restart/health/429 checks do not apply. New supporter purchases remain
+unavailable until external billing registration; that state is explicit and
+has a passing claim.
