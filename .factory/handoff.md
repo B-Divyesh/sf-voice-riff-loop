@@ -1,4 +1,4 @@
-# Voice Riff Loop repair 5 handoff
+# Voice Riff Loop verification 6 handoff
 
 - Work order: `voice-riff-loop-repair-5`
 - Result: **PASS — the review 2 finding is resolved**
@@ -110,3 +110,26 @@ export features are unchanged. No checkout is advertised, so no billing offer
 metadata was invented. Registration remains an external billing-operator step.
 
 No other known product gap remains.
+
+## Verification 6 update
+
+- Work order: `voice-riff-loop-verify-6`
+- Result: **PASS — zero findings and zero untested public claims**
+- Implementation SHA: `0b9443e3d619202448d8b576bf7ab80b8da14eab`
+- Documentation baseline SHA: `1d7458d9a97a6b80e8ac8b139515012bcf54e39f`
+
+No product code changed in this verification. A fresh clone of `0b9443e`
+passed `npm ci`, `npm test` (2/2), `npm run lint`, `npm run build`, and
+`npm run test:browser` (24/24). All 13 exact claim commands in
+`.factory/claims.json` passed independently.
+
+Fresh live phone and desktop browsers verified the first screen, sample demo,
+reset/isolation, recording, denied-permission and malformed-import recovery,
+WAV export, project transfer, license disclosure, offline reload, and
+controlled update flow. The live candidate assets match the fresh build
+byte-for-byte. `verify-url.sh` and Axe pass across the required routes; a
+fresh completed Lighthouse 13.0.1 mobile run is 100/100/100/100 (LCP 1.208 s,
+TBT 70 ms, CLS 0).
+
+For exact commands, evidence, and disposition of every earlier finding, see
+`.factory/verification-6.md`.
