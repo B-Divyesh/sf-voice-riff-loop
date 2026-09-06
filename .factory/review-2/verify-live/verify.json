@@ -1,0 +1,14 @@
+{
+  "url": "https://voice-riff-loop.sociobot.in/demo",
+  "loadMs": 636,
+  "errors": [],
+  "a11y": {
+    "title": "Demo — Voice Riff Loop",
+    "lang": "en",
+    "h1": 1,
+    "main": true,
+    "imgsMissingAlt": 0,
+    "buttonsUnlabeled": 0,
+    "textLength": 781
+  }
+}
