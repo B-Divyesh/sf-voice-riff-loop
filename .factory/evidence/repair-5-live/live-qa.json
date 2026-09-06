@@ -1,0 +1,167 @@
+{
+  "checkedAt": "2026-09-06T03:38:04.699Z",
+  "origin": "https://voice-riff-loop.sociobot.in",
+  "firstScreen": {
+    "phone": {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "h1": "Make a rhythm loop from your voice",
+      "audience": "For new electronic-music makers who want a first sketch before learning a DAW.",
+      "action": "Try it with sample data",
+      "explanation": "It opens four ready-cut voice sounds.",
+      "facts": [
+        "Audio stays in this browser",
+        "Works offline after first visit",
+        "Core loop tools are free"
+      ],
+      "firstScreenBottoms": [
+        {
+          "text": "It opens four ready-cut voice sounds.",
+          "bottom": 551
+        },
+        {
+          "text": "Audio stays in this browser",
+          "bottom": 611
+        },
+        {
+          "text": "Works offline after first visit",
+          "bottom": 653
+        },
+        {
+          "text": "Core loop tools are free",
+          "bottom": 695
+        }
+      ]
+    },
+    "desktop": {
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "h1": "Make a rhythm loop from your voice",
+      "audience": "For new electronic-music makers who want a first sketch before learning a DAW.",
+      "action": "Try it with sample data",
+      "explanation": "It opens four ready-cut voice sounds.",
+      "facts": [
+        "Audio stays in this browser",
+        "Works offline after first visit",
+        "Core loop tools are free"
+      ],
+      "firstScreenBottoms": [
+        {
+          "text": "It opens four ready-cut voice sounds.",
+          "bottom": 610
+        },
+        {
+          "text": "Audio stays in this browser",
+          "bottom": 674
+        },
+        {
+          "text": "Works offline after first visit",
+          "bottom": 674
+        },
+        {
+          "text": "Core loop tools are free",
+          "bottom": 716
+        }
+      ]
+    }
+  },
+  "demo": {
+    "pads": [
+      "THUMP",
+      "TSS",
+      "AH",
+      "HUM"
+    ],
+    "banner": "Demo — sample data, separate from your project",
+    "tempoAfterReset": 112,
+    "wavBytes": 1411244,
+    "wavDurationSeconds": 16,
+    "databasesBefore": [
+      "demo:voice-riff-loop"
+    ],
+    "databasesAfter": [
+      "demo:voice-riff-loop"
+    ],
+    "externalRequests": [],
+    "errors": []
+  },
+  "routes": {
+    "/privacy": {
+      "status": 200,
+      "title": "Privacy — Voice Riff Loop",
+      "h1": "Your recordings stay in this browser"
+    },
+    "/terms": {
+      "status": 200,
+      "title": "Terms — Voice Riff Loop",
+      "h1": "Terms for using Voice Riff Loop"
+    },
+    "/404.html": {
+      "status": 200,
+      "title": "Page not found — Voice Riff Loop",
+      "h1": "Page not found"
+    },
+    "/not-a-route-repair-5": {
+      "status": 404,
+      "title": "Page not found — Voice Riff Loop",
+      "h1": "Page not found"
+    }
+  },
+  "accessibility": {
+    "keyboard": {
+      "skipLinkFirst": true,
+      "tempoMin": 76,
+      "tempoMax": 156,
+      "recordAnimation": "none",
+      "focusOutline": {
+        "width": "4px",
+        "style": "solid"
+      }
+    },
+    "routes": {
+      "/": {
+        "seriousOrCriticalAxeViolations": [],
+        "undersizedTargets": [],
+        "horizontalOverflow": false
+      },
+      "/demo": {
+        "seriousOrCriticalAxeViolations": [],
+        "undersizedTargets": [],
+        "horizontalOverflow": false
+      },
+      "/privacy": {
+        "seriousOrCriticalAxeViolations": [],
+        "undersizedTargets": [],
+        "horizontalOverflow": false
+      },
+      "/terms": {
+        "seriousOrCriticalAxeViolations": [],
+        "undersizedTargets": [],
+        "horizontalOverflow": false
+      },
+      "/404.html": {
+        "seriousOrCriticalAxeViolations": [],
+        "undersizedTargets": [],
+        "horizontalOverflow": false
+      },
+      "/not-a-route-repair-5": {
+        "seriousOrCriticalAxeViolations": [],
+        "undersizedTargets": [],
+        "horizontalOverflow": false
+      }
+    }
+  },
+  "offline": {
+    "serviceWorkerControlled": true,
+    "caches": [
+      "voice-riff-loop-8a291282e284"
+    ],
+    "padCount": 4,
+    "errors": []
+  },
+  "errors": []
+}

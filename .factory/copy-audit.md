@@ -20,6 +20,16 @@
 
 All visitor-facing promises above have a matching entry and tagged regression test in `claims.json`. No landing sentence exceeds 22 words or contains a banned word.
 
+## Missing-page copy
+
+| Text | Words | Result |
+|---|---:|---|
+| Page not found | 3 | pass |
+| That page is not part of Voice Riff Loop. | 9 | pass |
+| Open the loop maker | 4 | pass |
+
+The missing-page heading names the error directly and uses no metaphor.
+
 ## Terminology
 
 | Concept | Product word |

@@ -1,0 +1,1 @@
+Make a 16-second rhythm loop from your voice, cut four pads, and export a WAV in your browser.
